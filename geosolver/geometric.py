@@ -198,12 +198,13 @@ class GeometricProblem (Notifier, Listener):
             raise Exception("no constraint "+str(con)+" in problem.")
 
     def receive_notify(self, object, notify):
-        """When notified of changed constraint parameters, pass on to listeners"""
+        """When notified of changed constraint parameters,
+        pass on to listeners"""
         if isinstance(object, ParametricConstraint):
             (message, data) = notify
             if message == "set_parameter":
                 self.send_notify(("set_parameter",(object,data)))
-        #elif object == self.cg:
+        # elif object == self.cg:
         #    self.send_notify(notify)
 
     def __str__(self):
@@ -214,7 +215,7 @@ class GeometricProblem (Notifier, Listener):
             s += str(con) + "\n"
         return s
 
-#class GeometricProblem
+# class GeometricProblem
 
 
 # ---------- GeometricSolver --------------
@@ -275,9 +276,9 @@ class GeometricSolver (Listener):
             return "under-constrained"
         elif len(toplevel) == 1:
             cluster = toplevel[0]
-            if isinstance(cluster,Rigid):
+            if isinstance(cluster, Rigid):
                 configurations = self.dr.get(cluster)
-                if configurations == None:
+                if configurations is None:
                     return "unsolved"
                 elif len(configurations) > 0:
                     return "well-constrained"
@@ -320,7 +321,7 @@ class GeometricSolver (Listener):
 
         # determine subclusters
         for method in self.dr.methods():
-            #if is_information_increasing(method):
+            # if is_information_increasing(method):
                 for out in method.outputs():
                     if isinstance(out, Rigid):
                         parent = map[out]
@@ -337,17 +338,16 @@ class GeometricSolver (Listener):
                 geoout = map[outcluster]
                 geoout.subs = list(geoin.subs)
 
-
         # determine top-level result
         rigids = filter(lambda c: isinstance(c, Rigid), self.dr.top_level())
-        if len(rigids) == 0:
+        if len(list(rigids)) == 0:
             # no variables in problem?
             result = GeometricCluster()
             result.variables = []
             result.subs = []
             result.solutions = []
             result.flags = GeometricCluster.UNSOLVED
-        elif len(rigids) == 1:
+        elif len(list(rigids)) == 1:
             # structurally well constrained
             result = map[rigids[0]]
         else:
@@ -398,7 +398,7 @@ class GeometricSolver (Listener):
             self._update_variable(var)
 
     def _rem_variable(self, var):
-        diag_print("GeometricSolver._rem_variable","gcs")
+        diag_print("GeometricSolver._rem_variable", "gcs")
         if var in self._map:
             self.dr.remove(self._map[var])
             del self._map[var]
@@ -406,8 +406,8 @@ class GeometricSolver (Listener):
     def _add_constraint(self, con):
         if isinstance(con, AngleConstraint):
             # map to hedgdehog
-            vars = list(con.variables());
-            hog = Hedgehog(vars[1],[vars[0],vars[2]])
+            vars = list(con.variables())
+            hog = Hedgehog(vars[1], [vars[0], vars[2]])
             self._map[con] = hog
             self._map[hog] = con
             self.dr.add(hog)
@@ -415,15 +415,15 @@ class GeometricSolver (Listener):
             self._update_constraint(con)
         elif isinstance(con, DistanceConstraint):
             # map to rigid
-            vars = list(con.variables());
-            rig = Rigid([vars[0],vars[1]])
+            vars = list(con.variables())
+            rig = Rigid([vars[0], vars[1]])
             self._map[con] = rig
             self._map[rig] = con
             self.dr.add(rig)
             # set configuration
             self._update_constraint(con)
         elif isinstance(con, FixConstraint):
-            if self.fixcluster != None:
+            if self.fixcluster is not None:
                 self.dr.remove(self.fixcluster)
             self.fixvars.append(self.get(con.variables()[0]))
             if len(self.fixvars) >= self.problem.dimension:
@@ -438,7 +438,7 @@ class GeometricSolver (Listener):
     def _rem_constraint(self, con):
         diag_print("GeometricSolver._rem_constraint","gcs")
         if isinstance(con,FixConstraint):
-            if self.fixcluster != None:
+            if self.fixcluster is not None:
                 self.dr.remove(self.fixcluster)
             var = self.get(con.variables()[0])
             if var in self.fixvars:
@@ -564,9 +564,8 @@ class GeometricCluster:
             spaces = spaces + "|"
 
         # make done
-        if done == None:
+        if done is None:
             done = Set()
-
 
         # recurse
         s = ""
@@ -606,6 +605,7 @@ class ParametricConstraint(Constraint, Notifier):
         self._value = value
         self.send_notify(("set_parameter", value))
 
+
 class FixConstraint(ParametricConstraint):
     """A constraint to fix a point relative to the coordinate system"""
 
@@ -621,7 +621,8 @@ class FixConstraint(ParametricConstraint):
         self.set_parameter(pos)
 
     def satisfied(self, mapping):
-        """return True iff mapping from variable names to points satisfies constraint"""
+        """return True iff mapping from variable names to
+        points satisfies constraint"""
         a = mapping[self._variables[0]]
         result = tol_eq(a[0], self._value[0]) and tol_eq(a[1], self.value[1])
         return result
@@ -630,6 +631,7 @@ class FixConstraint(ParametricConstraint):
         return "FixConstraint("\
             +str(self._variables[0])+","\
             +str(self._value)+")"
+
 
 class DistanceConstraint(ParametricConstraint):
     """A constraint on the Euclidean distance between two points"""
@@ -643,11 +645,12 @@ class DistanceConstraint(ParametricConstraint):
             dist - the distance parameter value
         """
         ParametricConstraint.__init__(self)
-        self._variables = [a,b]
+        self._variables = [a, b]
         self.set_parameter(dist)
 
     def satisfied(self, mapping):
-        """return True iff mapping from variable names to points satisfies constraint"""
+        """return True iff mapping from variable names to points
+        satisfies constraint"""
         a = mapping[self._variables[0]]
         b = mapping[self._variables[1]]
         result = tol_eq(distance_2p(a,b), self._value)
@@ -658,6 +661,7 @@ class DistanceConstraint(ParametricConstraint):
             +str(self._variables[0])+","\
             +str(self._variables[1])+","\
             +str(self._value)+")"
+
 
 class AngleConstraint(ParametricConstraint):
     """A constraint on the angle in point B of a triangle ABC"""
@@ -676,12 +680,13 @@ class AngleConstraint(ParametricConstraint):
         self.set_parameter(ang)
 
     def satisfied(self, mapping):
-        """return True iff mapping from variable names to points satisfies constraint"""
+        """return True iff mapping from variable names to points
+        satisfies constraint"""
         a = mapping[self._variables[0]]
         b = mapping[self._variables[1]]
         c = mapping[self._variables[2]]
-        ang = angle_3p(a,b,c)
-        if ang == None:
+        ang = angle_3p(a, b, c)
+        if ang is None:
             result = False
             cmp = self._value
         else:
@@ -690,8 +695,8 @@ class AngleConstraint(ParametricConstraint):
             else:
                 cmp = self._value
             result = tol_eq(ang, cmp)
-        if result == False:
-            diag_print("measured angle = "+str(ang)+", parameter value = "+str(cmp), "geometric")
+        if result is False:
+            diag_print("measured angle = "+str(ang)+",parameter value = "+str(cmp), "geometric")
         return result
 
     def __str__(self):
@@ -700,5 +705,3 @@ class AngleConstraint(ParametricConstraint):
             +str(self._variables[1])+","\
             +str(self._variables[2])+","\
             +str(self._value)+")"
-
-

@@ -1,3 +1,7 @@
+# coding: utf-8
+
+import math
+
 from includes import *
 from ui_compositionView import Ui_compositionView
 from tree import Tree
@@ -60,28 +64,38 @@ class CompositionView(QtWidgets.QDialog):
 
     def createTriggers(self):
         """ Create the triggers for the components in the graphical window """
-        pass
-        # TODO : adapt to PyQt5
-        # QtCore.QObject.connect(self.ui.zoomInButton, QtCore.SIGNAL("clicked()"),
+        # QtCore.QObject.connect(self.ui.zoomInButton,
+        #                        QtCore.SIGNAL("clicked()"),
         #                        self.zoomIn)
+        self.ui.zoomInButton.clicked.connect(self.zoomIn)
         # QtCore.QObject.connect(self.ui.zoomOutButton,
-        #                        QtCore.SIGNAL("clicked()"), self.zoomOut)
-        # QtCore.QObject.connect(self.ui.fitButton, QtCore.SIGNAL("clicked()"),
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.zoomOut)
+        self.ui.zoomOutButton.clicked.connect(self.zoomOut)
+        # QtCore.QObject.connect(self.ui.fitButton,
+        #                        QtCore.SIGNAL("clicked()"),
         #                        self.fit)
+        self.ui.fitButton.clicked.connect(self.fit)
         # QtCore.QObject.connect(self.ui.collapseButton,
-        #                        QtCore.SIGNAL("clicked()"), self.collapse)
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.collapse)
+        self.ui.collapseButton.clicked.connect(self.collapse)
         # QtCore.QObject.connect(self.ui.graphicsScene,
         #                        QtCore.SIGNAL("changed(const QList<QRectF> & )"),
         #                        self.updateSceneRect)
+        self.ui.graphicsScene.changed.connect(self.updateSceneRect)
         # QtCore.QObject.connect(self.ui.verticalSlider,
         #                        QtCore.SIGNAL("valueChanged(int)"),
         #                        self.setupMatrix)
+        self.ui.verticalSlider.valueChanged.connect(self.setupMatrix)
         # QtCore.QObject.connect(self.settings.dvData,
         #                        QtCore.SIGNAL("treeOrientationChanged()"),
         #                        self.updateTreeOrientation)
+        self.settings.dvData.treeOrientationChanged.connect(self.updateTreeOrientation)
 
     def setScene(self):
-        """ The scene where the tree is visualised in, will be created and set """
+        """ The scene where the tree is visualised in,
+        will be created and set """
         self.initView()
 
     def getViewportType(self):
@@ -91,21 +105,23 @@ class CompositionView(QtWidgets.QDialog):
         self.update()
 
     def createDecomposition(self):
-        """ Create a new decomposition. If an older one exists it will be removed. """
-        if self.ui.graphicsScene != None:
+        """ Create a new decomposition.
+        If an older one exists it will be removed. """
+        if self.ui.graphicsScene is not None:
             for item in self.ui.graphicsView.items():
                 item.hide()
-                if item.parentItem() == None:
+                if item.parentItem() is None:
                     self.ui.graphicsScene.removeItem(item)
-            if self.tree.root != None:
+            if self.tree.root is not None:
                 self.tree.clear(self.tree.root)
             del self.connections[:]
             del self.settings.dvData.fixedClusterIds[:]
             self.initView()
 
     def initView(self):
-        """ Updating the view with new data and nodes for the visualisation of the tree """
-        if self.prototypeManager.result != None:
+        """ Updating the view with new data and nodes
+        for the visualisation of the tree """
+        if self.prototypeManager.result is not None:
             self.nodeId = 0
             self.tree.root = self.populateTree(
                 self.prototypeManager.result.subs, None,

@@ -91,43 +91,66 @@ class GLViewport(QGLWidget):
     # self.zoom(1.0)
 
     def createTriggers(self):
-        pass
-        # TODO : adapt to PyQt5
         # QtCore.QObject.connect(self.settings.sketcherData,
-        #                        QtCore.SIGNAL("showGridChanged"), self.update)
+        #                        QtCore.SIGNAL("showGridChanged"),
+        #                        self.update)
+        self.settings.sketcherData.showGridChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.sketcherData,
-        #                        QtCore.SIGNAL("gridWidthChanged"), self.update)
+        #                        QtCore.SIGNAL("gridWidthChanged"),
+        #                        self.update)
+        self.settings.sketcherData.gridWidthChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.sketcherData,
-        #                        QtCore.SIGNAL("gridHeightChanged"), self.update)
+        #                        QtCore.SIGNAL("gridHeightChanged"),
+        #                        self.update)
+        self.settings.sketcherData.gridHeightChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.sketcherData,
         #                        QtCore.SIGNAL("backgroundColorChanged"),
         #                        self.setBackgroundColor)
+        self.settings.sketcherData.backgroundColorChanged.connect(self.setBackgroundColor)
         # QtCore.QObject.connect(self.settings.sketcherData,
         #                        QtCore.SIGNAL("backgroundColorChanged"),
         #                        self.update)
+        self.settings.sketcherData.backgroundColorChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.sketcherData,
-        #                        QtCore.SIGNAL("pointSizeChanged"), self.update)
+        #                        QtCore.SIGNAL("pointSizeChanged"),
+        #                        self.update)
+        self.settings.sketcherData.pointSizeChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.sketcherData,
-        #                        QtCore.SIGNAL("fPointSizeChanged"), self.update)
+        #                        QtCore.SIGNAL("fPointSizeChanged"),
+        #                        self.update)
+        self.settings.sketcherData.fPointSizeChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.sketcherData,
-        #                        QtCore.SIGNAL("lineSizeChanged"), self.update)
+        #                        QtCore.SIGNAL("lineSizeChanged"),
+        #                        self.update)
+        self.settings.sketcherData.lineSizeChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.sketcherData,
         #                        QtCore.SIGNAL("distanceSizeChanged"),
         #                        self.update)
+        self.settings.sketcherData.distanceSizeChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.sketcherData,
-        #                        QtCore.SIGNAL("pointColorChanged"), self.update)
+        #                        QtCore.SIGNAL("pointColorChanged"),
+        #                        self.update)
+        self.settings.sketcherData.pointColorChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.sketcherData,
-        #                        QtCore.SIGNAL("fPointColorChanged"), self.update)
+        #                        QtCore.SIGNAL("fPointColorChanged"),
+        #                        self.update)
+        self.settings.sketcherData.fPointColorChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.sketcherData,
-        #                        QtCore.SIGNAL("lineColorChanged"), self.update)
+        #                        QtCore.SIGNAL("lineColorChanged"),
+        #                        self.update)
+        self.settings.sketcherData.lineColorChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.sketcherData,
-        #                        QtCore.SIGNAL("angleColorChanged"), self.update)
+        #                        QtCore.SIGNAL("angleColorChanged"),
+        #                        self.update)
+        self.settings.sketcherData.angleColorChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.sketcherData,
         #                        QtCore.SIGNAL("selectionColorChanged"),
         #                        self.update)
+        self.settings.sketcherData.selectionColorChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.sketcherData,
         #                        QtCore.SIGNAL("distanceColorChanged"),
         #                        self.update)
+        self.settings.sketcherData.distanceColorChanged.connect(self.update)
 
     def paintGL(self):
         self.preDraw()
@@ -418,23 +441,23 @@ class GLViewport(QGLWidget):
         return selection
 
 
-"""		
-
-	def wheelEvent(self, wheelEvent):
-		self.makeCurrent()
-		if wheelEvent.delta() < 0 and self.zoomfactor > 1.0:
-			self.zoomfactor=1.0
-		elif wheelEvent.delta() > 0 and self.zoomfactor < 1.0:
-			self.zoomfactor = 1.0
-	
-		if self.zoomfactor < 0.0:
-			self.zoomfactor = 0.0
-		
-		self.zoomfactor -= wheelEvent.delta()/4*0.001
-		self.zoom(self.zoomfactor)
-		
-	
-		"""
+# """
+#
+# 	def wheelEvent(self, wheelEvent):
+# 		self.makeCurrent()
+# 		if wheelEvent.delta() < 0 and self.zoomfactor > 1.0:
+# 			self.zoomfactor=1.0
+# 		elif wheelEvent.delta() > 0 and self.zoomfactor < 1.0:
+# 			self.zoomfactor = 1.0
+#
+# 		if self.zoomfactor < 0.0:
+# 			self.zoomfactor = 0.0
+#
+# 		self.zoomfactor -= wheelEvent.delta()/4*0.001
+# 		self.zoom(self.zoomfactor)
+#
+#
+# 		"""
 
 
 class SolutionGLViewport(GLViewport):
@@ -454,48 +477,82 @@ class SolutionGLViewport(GLViewport):
         # TODO : adapt to PyQt5
         # # QtCore.QObject.connect(self.timer, QtCore.SIGNAL("timeout()"), self.update)
         # QtCore.QObject.connect(self.settings.svData,
-        #                        QtCore.SIGNAL("showGridChanged"), self.update)
+        #                        QtCore.SIGNAL("showGridChanged"),
+        #                        self.update)
+        self.settings.svData.showGridChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
-        #                        QtCore.SIGNAL("gridWidthChanged"), self.update)
+        #                        QtCore.SIGNAL("gridWidthChanged"),
+        #                        self.update)
+        self.settings.svData.gridWidthChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
-        #                        QtCore.SIGNAL("gridHeightChanged"), self.update)
+        #                        QtCore.SIGNAL("gridHeightChanged"),
+        #                        self.update)
+        self.settings.svData.gridHeightChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("backgroundColorChanged"),
         #                        self.setBackgroundColor)
+        self.settings.svData.backgroundColorChanged.connect(self.setBackgroundColor)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("backgroundColorChanged"),
         #                        self.update)
+        self.settings.svData.backgroundColorChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
-        #                        QtCore.SIGNAL("pointSizeChanged"), self.update)
+        #                        QtCore.SIGNAL("pointSizeChanged"),
+        #                        self.update)
+        self.settings.svData.pointSizeChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
-        #                        QtCore.SIGNAL("fPointSizeChanged"), self.update)
+        #                        QtCore.SIGNAL("fPointSizeChanged"),
+        #                        self.update)
+        self.settings.svData.fPointSizeChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
-        #                        QtCore.SIGNAL("lineSizeChanged"), self.update)
+        #                        QtCore.SIGNAL("lineSizeChanged"),
+        #                        self.update)
+        self.settings.svData.lineSizeChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("distanceSizeChanged"),
         #                        self.update)
+        self.settings.svData.distanceSizeChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
-        #                        QtCore.SIGNAL("pointColorChanged"), self.update)
+        #                        QtCore.SIGNAL("pointColorChanged"),
+        #                        self.update)
+        self.settings.svData.pointColorChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
-        #                        QtCore.SIGNAL("fPointColorChanged"), self.update)
+        #                        QtCore.SIGNAL("fPointColorChanged"),
+        #                        self.update)
+        self.settings.svData.fPointColorChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
-        #                        QtCore.SIGNAL("lineColorChanged"), self.update)
+        #                        QtCore.SIGNAL("lineColorChanged"),
+        #                        self.update)
+        self.settings.svData.lineColorChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
-        #                        QtCore.SIGNAL("angleColorChanged"), self.update)
+        #                        QtCore.SIGNAL("angleColorChanged"),
+        #                         self.update)
+        self.settings.svData.angleColorChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("distanceColorChanged"),
         #                        self.update)
+        self.settings.svData.distanceColorChanged.connect(self.update)
         #
         # QtCore.QObject.connect(self.settings.svData,
-        #                        QtCore.SIGNAL("pointVisChanged"), self.update)
+        #                        QtCore.SIGNAL("pointVisChanged"),
+        #                        self.update)
+        self.settings.svData.pointVisChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
-        #                        QtCore.SIGNAL("fpointVisChanged"), self.update)
+        #                        QtCore.SIGNAL("fpointVisChanged"),
+        #                        self.update)
+        self.settings.svData.fpointVisChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
-        #                        QtCore.SIGNAL("lineVisChanged"), self.update)
+        #                        QtCore.SIGNAL("lineVisChanged"),
+        #                        self.update)
+        self.settings.svData.lineVisChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
-        #                        QtCore.SIGNAL("angleVisChanged"), self.update)
+        #                        QtCore.SIGNAL("angleVisChanged"),
+        #                        self.update)
+        self.settings.svData.angleVisChanged.connect(self.update)
         # QtCore.QObject.connect(self.settings.svData,
-        #                        QtCore.SIGNAL("distanceVisChanged"), self.update)
+        #                        QtCore.SIGNAL("distanceVisChanged"),
+        #                        self.update)
+        self.settings.svData.distanceVisChanged.connect(self.update)
 
     def draw(self):
         self.viewport.drawObjects()
@@ -506,7 +563,7 @@ class SolutionGLViewport(GLViewport):
 
     def showGrid(self):
         if self.settings.svData.showGrid:
-            self.qglColor(QtGui.QColor(0.0, 0.0, 0.0))
+            self.qglColor(QtGui.QColor(0, 0, 0))
             self.drawGrid()
 
     def drawGrid(self):

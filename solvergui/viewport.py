@@ -133,8 +133,11 @@ class Viewport(QtWidgets.QScrollArea):
         self.toolbar.resize(200, 1)
 
     def createTriggers(self):
-        pass
-        # TODO : adapt to PyQt5
+        self.viewportList.currentIndexChanged.connect(self.changeViewport)
+        self.actionMove.triggered.connect(self.setMoveActive)
+        self.actionRotate.triggered.connect(self.setMoveActive)
+        self.actionZoom.triggered.connect(self.setZoomActive)
+        self.actionSync.triggered.connect(self.doSync)
         # QtCore.QObject.connect(self.viewportList, QtCore.SIGNAL(
         #     "currentIndexChanged(const QString &)"), self.changeViewport)
         # QtCore.QObject.connect(self.actionMove,

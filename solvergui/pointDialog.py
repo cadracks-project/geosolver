@@ -16,23 +16,26 @@ class PointDialog(QtWidgets.QWidget):
         self.needUpdateObject = True
 
     def createTriggers(self):
-        pass
-        # TODO : adapt to PyQt5
         # QtCore.QObject.connect(self.ui.pointName_2,
         #                        QtCore.SIGNAL("textEdited(const QString &)"),
         #                        self.nameEdited)
+        self.ui.pointName_2.textEdited.connect(self.nameEdited)
         # QtCore.QObject.connect(self.ui.pointCoordX_2,
         #                        QtCore.SIGNAL("valueChanged(double)"),
         #                        self.newXPos)
+        self.ui.pointCoordX_2.valueChanged.connect(self.newXPos)
         # QtCore.QObject.connect(self.ui.pointCoordY_2,
         #                        QtCore.SIGNAL("valueChanged(double)"),
         #                        self.newYPos)
+        self.ui.pointCoordY_2.valueChanged.connect(self.newYPos)
         # QtCore.QObject.connect(self.ui.pointCoordZ_2,
         #                        QtCore.SIGNAL("valueChanged(double)"),
         #                        self.newZPos)
+        self.ui.pointCoordZ_2.valueChanged.connect(self.newZPos)
         # QtCore.QObject.connect(self.ui.pointFixed_2,
         #                        QtCore.SIGNAL("stateChanged(int)"),
         #                        self.fixedChange)
+        self.ui.pointFixed_2.stateChanged.connect(self.fixedChange)
 
     def update(self, objectInfo):
         self.ui.pointName_2.setText(objectInfo.name)

@@ -16,20 +16,22 @@ class AngleDialog(QtWidgets.QWidget):
         self.aName = ""
 
     def createTriggers(self):
-        pass
-        # TODO : adapt to PyQt5
         # QtCore.QObject.connect(self.ui.angleName,
         #                        QtCore.SIGNAL("textEdited(const QString &)"),
         #                        self.nameEdited)
+        self.ui.angleName.textEdited.connect(self.nameEdited)
         # QtCore.QObject.connect(self.ui.optionAngle,
         #                        QtCore.SIGNAL("valueChanged(double)"),
         #                        self.newAngle)
+        self.ui.optionAngle.valueChanged.connect(self.newAngle)
         # QtCore.QObject.connect(self.ui.angleFixed,
         #                        QtCore.SIGNAL("stateChanged(int)"),
         #                        self.fixedChange)
+        self.ui.angleFixed.stateChanged.connect(self.fixedChange)
         # QtCore.QObject.connect(self.ui.getRangesButton,
         #                        QtCore.SIGNAL("clicked()"),
         #                        self.setParameterRange)
+        self.ui.getRangesButton.clicked.connect(self.setParameterRange)
 
     def update(self, objectInfo):
         self.ui.angleName.setText(objectInfo.name)

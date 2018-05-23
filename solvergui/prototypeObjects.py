@@ -59,18 +59,26 @@ class PrototypeManager(Singleton):
             self.nrOfImports = 0
 
     def createTriggers(self):
-        pass
-        # TODO : adapt to PyQt5
         # QtCore.QObject.connect(self.settings.sketcherData, QtCore.SIGNAL("pointSizeChanged"), self.updateSize)
+        self.settings.sketcherData.pointSizeChanged.connect(self.updateSize)
         # QtCore.QObject.connect(self.settings.sketcherData, QtCore.SIGNAL("fPointSizeChanged"), self.updateSize)
+        self.settings.sketcherData.fPointSizeChanged.connect(self.updateSize)
         # QtCore.QObject.connect(self.settings.sketcherData, QtCore.SIGNAL("lineSizeChanged"), self.updateSize)
+        self.settings.sketcherData.lineSizeChanged.connect(self.updateSize)
         # QtCore.QObject.connect(self.settings.sketcherData, QtCore.SIGNAL("distanceSizeChanged"), self.updateSize)
+        self.settings.sketcherData.distanceSizeChanged.connect(self.updateSize)
         # QtCore.QObject.connect(self.settings.sketcherData, QtCore.SIGNAL("pointColorChanged"), self.updateColor)
+        self.settings.sketcherData.pointColorChanged.connect(self.updateColor)
         # QtCore.QObject.connect(self.settings.sketcherData, QtCore.SIGNAL("fPointColorChanged"), self.updateColor)
+        self.settings.sketcherData.fPointColorChanged.connect(self.updateColor)
         # QtCore.QObject.connect(self.settings.sketcherData, QtCore.SIGNAL("lineColorChanged"), self.updateColor)
+        self.settings.sketcherData.lineColorChanged.connect(self.updateColor)
         # QtCore.QObject.connect(self.settings.sketcherData, QtCore.SIGNAL("angleColorChanged"), self.updateColor)
+        self.settings.sketcherData.angleColorChanged.connect(self.updateColor)
         # QtCore.QObject.connect(self.settings.sketcherData, QtCore.SIGNAL("selectionColorChanged"), self.updateColor)
+        self.settings.sketcherData.selectionColorChanged.connect(self.updateColor)
         # QtCore.QObject.connect(self.settings.sketcherData, QtCore.SIGNAL("distanceColorChanged"), self.updateColor)
+        self.settings.sketcherData.distanceColorChanged.connect(self.updateColor)
 
     def updateSize(self):
         for prtObject in self.prtObjects:
@@ -340,7 +348,7 @@ class PrototypeManager(Singleton):
     def removeAllClusters(self):
         self.removeClusterObjects(self.clsObjects)
 
-    def removeObjects( self, objects ):
+    def removeObjects(self, objects):
         """ Removing the objects from the list. The objects are also removed from the
             constraint graph. The order of removal is important. 
         
@@ -349,16 +357,19 @@ class PrototypeManager(Singleton):
         """
         for obj in objects:
             if obj.objType == ObjectType.ANGLE_CONSTRAINT and not obj.ghost:
-                obj.con = self.geoProblem.get_angle( obj.pointBegin.key, obj.pointMiddle.key, obj.pointEnd.key )
-                self.geoProblem.rem_constraint( obj.con )
-        #print "removal of Angles succeeded """
+                obj.con = self.geoProblem.get_angle(obj.pointBegin.key,
+                                                    obj.pointMiddle.key,
+                                                    obj.pointEnd.key)
+                self.geoProblem.rem_constraint(obj.con)
+        # print "removal of Angles succeeded """
         for obj in objects:
             if obj.objType == ObjectType.DISTANCE_CONSTRAINT and not obj.ghost:
-                #print " distance constr keys: ", obj.pointBegin.key, obj.pointEnd.key
-                obj.con = self.geoProblem.get_distance( obj.pointBegin.key, obj.pointEnd.key )
-                #print " got it "
+                # print " distance constr keys: ", obj.pointBegin.key, obj.pointEnd.key
+                obj.con = self.geoProblem.get_distance( obj.pointBegin.key,
+                                                        obj.pointEnd.key)
+                # print " got it "
                 self.geoProblem.rem_constraint( obj.con )
-        #print "removal of Distance Constraints succeeded """
+        # print "removal of Distance Constraints succeeded """
         for obj in objects:
             if obj.objType == ObjectType.POINT and not obj.ghost:
                 self.geoProblem.rem_point( obj.key )
@@ -366,22 +377,22 @@ class PrototypeManager(Singleton):
         for obj in objects:
             if obj.objType == ObjectType.FIXED_POINT and not obj.ghost:
                 self.geoProblem.rem_constraint( self.geoProblem.get_fix( obj.key ) )
-        #print "removal of Fixed points succeeded """
-        self.panel.removeItems( map( lambda x:x.name, objects ) )
-        self.prtObjects = filter( lambda x:x not in objects, self.prtObjects )
-        #print "removal of All other succeeded """
+        # print "removal of Fixed points succeeded """
+        self.panel.removeItems(map(lambda x: x.name, objects))
+        self.prtObjects = filter(lambda x: x not in objects, self.prtObjects)
+        # print "removal of All other succeeded """
 
     def removeClusterObjects(self, clsObjects, removeOnlyTemp=False, removeFixed=False):
         if removeOnlyTemp and removeFixed:
-            self.clsObjects =  filter(lambda x:x not in clsObjects or (not x.temporary or not x.fixed), self.clsObjects)
+            self.clsObjects = filter(lambda x: x not in clsObjects or (not x.temporary or not x.fixed), self.clsObjects)
         elif removeOnlyTemp:
-            self.clsObjects =  filter(lambda x:x not in clsObjects or not x.temporary, self.clsObjects)
+            self.clsObjects = filter(lambda x: x not in clsObjects or not x.temporary, self.clsObjects)
         else:
-            self.clsObjects =  filter(lambda x:x not in clsObjects, self.clsObjects)
+            self.clsObjects = filter(lambda x: x not in clsObjects, self.clsObjects)
 
     def deleteObject( self, removeObject ):
-        """ Delete the object from the list of prototypes. If other objects are dependent on the deleted object, then
-        they will be removed too. 
+        """ Delete the object from the list of prototypes. If other objects are
+        dependent on the deleted object, then they will be removed too. 
         
         Paramaters:
             removeObject - remove the object from the list of prototype objects.
@@ -407,10 +418,11 @@ class PrototypeManager(Singleton):
                 self.deleteObject(selObj)
 
     def getSelectedObjects(self):
-        return filter(lambda x:x.selected, self.prtObjects)
+        return filter(lambda x: x.selected, self.prtObjects)
 
     def updateObjects( self ):
-        """ Update all the objects, this might also be a ghost object (object that does not really exist, but is visualised). """
+        """ Update all the objects, this might also be a ghost object
+        (object that does not really exist, but is visualised). """
         for prtObject in self.prtObjects:
             prtObject.update()
             if prtObject.objType == ObjectType.POINT and not prtObject.ghost:
@@ -419,17 +431,18 @@ class PrototypeManager(Singleton):
                 pointPosition[1] = prtObject.position[1]
                 pointPosition[2] = prtObject.position[2]
             elif prtObject.objType == ObjectType.DISTANCE_CONSTRAINT and not prtObject.ghost:
-                if prtObject.distance != None:
+                if prtObject.distance is not None:
                     self.updateConstraint(prtObject, prtObject.distance)
             elif prtObject.objType == ObjectType.ANGLE_CONSTRAINT and not prtObject.ghost:
-                if prtObject.angle != None:
+                if prtObject.angle is not None:
                     self.updateConstraint(prtObject, prtObject.angle)
 
         for transpPrtObject in self.transpPrtObjects:
             transpPrtObject.update()
 
     def updateConstraint( self, obj, value ):
-        """ Update an existing constraint, with a new value. This value is also passed to the constraint graph.
+        """ Update an existing constraint, with a new value.
+        This value is also passed to the constraint graph.
             
         Parameters:
             obj - prototype object which needs to be updated.
@@ -437,49 +450,54 @@ class PrototypeManager(Singleton):
         """
         if obj.objType == ObjectType.DISTANCE_CONSTRAINT:
             obj.distance = value
-            dConstraint = self.geoProblem.get_distance( obj.pointBegin.key, obj.pointEnd.key )
-            if dConstraint != None:
+            dConstraint = self.geoProblem.get_distance( obj.pointBegin.key,
+                                                        obj.pointEnd.key)
+            if dConstraint is not None:
                 dConstraint._value = obj.distance
 
         elif obj.objType == ObjectType.ANGLE_CONSTRAINT:
             obj.angle = value
-            dAngle = self.geoProblem.get_angle( obj.pointBegin.key, obj.pointMiddle.key, obj.pointEnd.key )
-            if dAngle != None:
+            dAngle = self.geoProblem.get_angle( obj.pointBegin.key,
+                                                obj.pointMiddle.key,
+                                                obj.pointEnd.key )
+            if dAngle is not None:
                 dAngle._value = math.radians(obj.angle)
 
     def updateConstraintKeys(self, oldKey, newKey):
-        """ Update the keyvalues of a constraint. To update a key value, the constraints
-        must first be found which have the old key. Once found it must be replaced with the
-        new one. The constraint with the old key is therefore first to be removed from the graph 
-        and then to be added again with the new key.
+        """ Update the keyvalues of a constraint. To update a key value,
+        the constraints must first be found which have the old key.
+        Once found it must be replaced with the new one.
+        The constraint with the old key is therefore first to be removed
+        from the graph and then to be added again with the new key.
         
         Parameters:
-            oldKey - the old key of the constraint, used for lookup of the constraints
+            oldKey - the old key of the constraint,
+                     used for lookup of the constraints
             newKey - the new key which has to be set for the constraints """
 
         for prtObj in self.prtObjects:
             if prtObj.objType == ObjectType.DISTANCE_CONSTRAINT:
                 if prtObj.pointBegin.key == oldKey or prtObj.pointEnd.key == oldKey:
                     dConstraint = self.geoProblem.get_distance(prtObj.pointBegin.key, prtObj.pointEnd.key)
-                    if dConstraint != None:
+                    if dConstraint is not None:
                         self.geoProblem.rem_constraint(dConstraint)
                         if prtObj.pointBegin.key == oldKey:
-                            prtObj.con = geosolver.DistanceConstraint( newKey, prtObj.pointEnd.key, prtObj.distance )
+                            prtObj.con = geosolver.DistanceConstraint(newKey, prtObj.pointEnd.key, prtObj.distance )
                         elif prtObj.pointEnd.key == oldKey:
-                            prtObj.con = geosolver.DistanceConstraint( prtObj.pointBegin.key, newKey, prtObj.distance )
+                            prtObj.con = geosolver.DistanceConstraint(prtObj.pointBegin.key, newKey, prtObj.distance )
                         self.geoProblem.add_constraint(prtObj.con)
 
             elif prtObj.objType == ObjectType.ANGLE_CONSTRAINT:
                 if prtObj.pointBegin.key == oldKey or prtObj.pointMiddle.key == oldKey or prtObj.pointEnd.key == oldKey:
                     aConstraint = self.geoProblem.get_angle(prtObj.pointBegin.key, prtObj.pointMiddle.key, prtObj.pointEnd.key)
                     self.geoProblem.rem_constraint(aConstraint)
-                    if aConstraint != None:
+                    if aConstraint is not None:
                         if prtObj.pointBegin.key == oldKey:
-                            prtObj.con = geosolver.AngleConstraint( newKey, prtObj.pointMiddle.key, prtObj.pointEnd.key, prtObj.angle )
+                            prtObj.con = geosolver.AngleConstraint(newKey, prtObj.pointMiddle.key, prtObj.pointEnd.key, prtObj.angle )
                         elif prtObj.pointMiddle.key == oldKey:
-                            prtObj.con = geosolver.AngleConstraint( prtObj.pointBegin.key, newKey, prtObj.pointEnd.key, prtObj.angle )
+                            prtObj.con = geosolver.AngleConstraint(prtObj.pointBegin.key, newKey, prtObj.pointEnd.key, prtObj.angle )
                         elif prtObj.pointEnd.key == oldKey:
-                            prtObj.con = geosolver.AngleConstraint( prtObj.pointBegin.key, prtObj.pointMiddle.key, newKey, prtObj.angle )
+                            prtObj.con = geosolver.AngleConstraint(prtObj.pointBegin.key, prtObj.pointMiddle.key, newKey, prtObj.angle )
                         self.geoProblem.add_constraint(prtObj.con)
 
     def getImportedObjsByKey(self, key):
@@ -494,9 +512,9 @@ class PrototypeManager(Singleton):
             obj - object for which the constraint must be added.
         """
         if obj.objType == ObjectType.POINT:
-            self.geoProblem.add_constraint( geosolver.FixConstraint( obj.key, Vec( [obj.position[0], obj.position[1], obj.position[2]] ) ) )
-            newObj = FixedPoint( obj.key, obj.position, obj.radius )
-            self.replaceObject( obj, newObj )
+            self.geoProblem.add_constraint(geosolver.FixConstraint(obj.key, Vec( [obj.position[0], obj.position[1], obj.position[2]])))
+            newObj = FixedPoint(obj.key, obj.position, obj.radius)
+            self.replaceObject(obj, newObj)
 
     def removeConstraint( self, obj ):
         """ Remove a constraint from an existing object.
@@ -505,13 +523,15 @@ class PrototypeManager(Singleton):
             obj - object from which the constraint must be removed.
         """
         if obj.objType == ObjectType.FIXED_POINT:
-            self.geoProblem.rem_constraint( self.geoProblem.get_fix( obj.key ) )
-            newObj = Point( obj.key, obj.position, obj.radius )
-            self.replaceObject( obj, newObj )
+            self.geoProblem.rem_constraint(self.geoProblem.get_fix(obj.key))
+            newObj = Point( obj.key, obj.position, obj.radius)
+            self.replaceObject(obj, newObj)
 
     def replaceObject( self, oldObj, newObj ):
-        """ Replace object, when a constraint is added to an existing object it is replaced with a new type of object.
-        Because of this a new instance is created, which is not known by other prototype objects, so al the references 
+        """ Replace object, when a constraint is added to an existing object
+        it is replaced with a new type of object.
+        Because of this a new instance is created, which is not known by
+        other prototype objects, so al the references 
         must be set correct. 
         
         Parameters:
@@ -528,8 +548,10 @@ class PrototypeManager(Singleton):
         self.prtObjects += [newObj]
 
     def replaceConstrainedObject( self, oldCstrObj, newCstrObj ):
-        """ Replace object, when a constraint is added to an existing object it is replaced with a new type of object.
-        Because of this a new instance is created, which is not known by other prototype objects, so al the references 
+        """ Replace object, when a constraint is added to an existing object
+        it is replaced with a new type of object.
+        Because of this a new instance is created, which is not known by
+        other prototype objects, so al the references 
         must be set correct. 
         
         Parameters:
@@ -540,17 +562,17 @@ class PrototypeManager(Singleton):
         self.removeObjects(mergedConstraints)
         self.updateConstraintKeys(oldCstrObj.key, newCstrObj.key)
         for prtObject in self.prtObjects:
-            prtObject.setNewReference( oldCstrObj, newCstrObj )
+            prtObject.setNewReference(oldCstrObj, newCstrObj)
 
         if self.objectSelected == oldCstrObj:
             self.objectSelected = newCstrObj
 
-        self.prtObjects = filter( lambda x:x is not oldCstrObj, self.prtObjects )
+        self.prtObjects = filter(lambda x: x is not oldCstrObj, self.prtObjects )
         self.removeObjects([oldCstrObj])
 
-    def deselectObject( self ):
+    def deselectObject(self):
         """ Deselect the selected object, which is selected """
-        if self.objectSelected != None:
+        if self.objectSelected is not None:
             self.objectSelected.selected = False
         self.objectSelected = None
         self.axis.selected = -1
@@ -807,8 +829,9 @@ class PrototypeManager(Singleton):
             if prtObject.temporarySelected:
                 prtObject.temporarySelected = False
 
-    def setPanel( self, panel ):
-        """ Set the panel in the main window for access, for updating information 
+    def setPanel(self, panel):
+        """ Set the panel in the main window for access,
+        for updating information 
         
         Parameters:
             panel - panel from the main window.
@@ -816,7 +839,7 @@ class PrototypeManager(Singleton):
         """
         self.panel = panel
 
-    def isNameUnique( self, oldName, newName ):
+    def isNameUnique( self, oldName, newName):
         """ Check whether the name given by the user is unique. 
         
         Parameters:
@@ -831,7 +854,7 @@ class PrototypeManager(Singleton):
                 return False
         return True
 
-    def setObjectName( self, oldName, newName ):
+    def setObjectName(self, oldName, newName):
         """ Set a new name for an object. 
         
         Parameters:    
@@ -845,13 +868,13 @@ class PrototypeManager(Singleton):
         return False
 
     def showClusters(self):
-           if self.visualiseClusters:
-               self.visualiseClusters = False
-           else:
-               self.visualiseClusters = True
+       if self.visualiseClusters:
+           self.visualiseClusters = False
+       else:
+           self.visualiseClusters = True
 
     def getParameterRange(self, prtObject):
-        if self.result != None:
+        if self.result is not None:
             if self.result.flag == GeometricCluster.OK  and prtObject.parameterRange == []:
                 if prtObject.objType == ObjectType.DISTANCE_CONSTRAINT:
                     dConstraint = self.geoProblem.get_distance(prtObject.pointBegin.key, prtObject.pointEnd.key)
@@ -977,7 +1000,7 @@ class PrototypeManager(Singleton):
                 else:
                     raise Exception("Unable to import non-point variable: "+str(var))
         # add constraints
-        constraints = problem.cg.constraints();
+        constraints = problem.cg.constraints()
         count = 0
         for con in constraints:
                 if isinstance(con, geosolver.DistanceConstraint):
@@ -1002,14 +1025,14 @@ class PrototypeManager(Singleton):
         # compute object visulisation, etc
         self.updateObjects()
 
-
     def setObjectNumber(self, domElement):
         self.objectNr = domElement.attribute("number", "").toInt()[0]
         self.nrOfImports = domElement.attribute("numberOfImports", "").toInt()[0]
 
 
 class Object:
-    """ The general prototype object class. All objects which must be visualised, or have a connection with the constraint
+    """ The general prototype object class. All objects which must be
+    visualised, or have a connection with the constraint
     solver must be subclassed from the Object class. """
     def __init__( self ):
         self.settings = Settings()

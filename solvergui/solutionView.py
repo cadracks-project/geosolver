@@ -52,76 +52,96 @@ class SolutionView(QtWidgets.QDialog):
 
     def createTriggers(self):
         """ Triggers for the buttons in the Solution View """
-        pass
-        # TODO : adapt to PyQt5
         # QtCore.QObject.connect(self.ui.moveButton,
         #                        QtCore.SIGNAL("clicked(bool)"),
         #                        self.setMoveActive)
+        self.ui.moveButton.clicked.connect(self.setMoveActive)
         # QtCore.QObject.connect(self.ui.rotateButton,
         #                        QtCore.SIGNAL("clicked(bool)"),
         #                        self.setRotateActive)
+        self.ui.rotateButton.clicked.connect(self.setRotateActive)
         # QtCore.QObject.connect(self.ui.zoomButton,
         #                        QtCore.SIGNAL("clicked(bool)"),
         #                        self.setZoomActive)
+        self.ui.zoomButton.clicked.connect(self.setZoomActive)
         # QtCore.QObject.connect(self.ui.syncButton,
-        #                        QtCore.SIGNAL("clicked(bool)"), self.synchronise)
+        #                        QtCore.SIGNAL("clicked(bool)"),
+        #                        self.synchronise)
+        self.ui.syncButton.clicked.connect(self.synchronise)
         #
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("pointSizeChanged"),
         #                        self.updateSize)
+        self.settings.svData.pointSizeChanged.connect(self.updateSize)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("fPointSizeChanged"),
         #                        self.updateSize)
+        self.settings.svData.fPointSizeChanged.connect(self.updateSize)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("lineSizeChanged"),
         #                        self.updateSize)
+        self.settings.svData.lineSizeChanged.connect(self.updateSize)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("distanceSizeChanged"),
         #                        self.updateSize)
+        self.settings.svData.distanceSizeChanged.connect(self.updateSize)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("pointColorChanged"),
         #                        self.updateColor)
+        self.settings.svData.pointColorChanged.connect(self.updateColor)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("fPointColorChanged"),
         #                        self.updateColor)
+        self.settings.svData.fPointColorChanged.connect(self.updateColor)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("lineColorChanged"),
         #                        self.updateColor)
+        self.settings.svData.lineColorChanged.connect(self.updateColor)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("angleColorChanged"),
         #                        self.updateColor)
+        self.settings.svData.angleColorChanged.connect(self.updateColor)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("selectionColorChanged"),
         #                        self.updateColor)
+        self.settings.svData.selectionColorChanged.connect(self.updateColor)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("distanceColorChanged"),
         #                        self.updateColor)
+        self.settings.svData.distanceColorChanged.connect(self.updateColor)
         #
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("pointVisChanged"),
         #                        self.updateVisibility)
+        self.settings.svData.pointVisChanged.connect(self.updateVisibility)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("fpointVisChanged"),
         #                        self.updateVisibility)
+        self.settings.svData.fpointVisChanged.connect(self.updateVisibility)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("lineVisChanged"),
         #                        self.updateVisibility)
+        self.settings.svData.lineVisChanged.connect(self.updateVisibility)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("angleVisChanged"),
         #                        self.updateVisibility)
+        self.settings.svData.angleVisChanged.connect(self.updateVisibility)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("distanceVisChanged"),
         #                        self.updateVisibility)
+        self.settings.svData.distanceVisChanged.connect(self.updateVisibility)
 
     def removeInterfaceItems(self):
-        """ Removes the standard interface buttons to control the camera etc. """
+        """ Removes the standard interface buttons to control
+        the camera etc. """
         self.ui.moveButton.hide()
         self.ui.rotateButton.hide()
         self.ui.zoomButton.hide()
         self.ui.vboxlayout.removeItem(self.ui.hboxlayout)
 
     def setMoveActive(self, active):
-        """ Set the move button as active button and inform the camera the translation action is active
+        """ Set the move button as active button and inform the camera the
+        translation action is active
         
         Paramaters:
             active - set the state of the camera, in this case for translation

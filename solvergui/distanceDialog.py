@@ -15,19 +15,21 @@ class DistanceDialog(QtWidgets.QWidget):
         self.dName = ""
 
     def createTriggers(self):
-        pass
-        # TODO : adapt to PyQt5
         # QtCore.QObject.connect(self.ui.distanceName,
         #                        QtCore.SIGNAL("textEdited(const QString &)"),
         #                        self.nameEdited)
+        self.ui.distanceName.textEdited.connect(self.nameEdited)
         # QtCore.QObject.connect(self.ui.optionDistance,
         #                        QtCore.SIGNAL("valueChanged(double)"),
         #                        self.newDistance)
+        self.ui.optionDistance.valueChanged.connect(self.newDistance)
         # QtCore.QObject.connect(self.ui.DistanceFixed,
         #                        QtCore.SIGNAL("stateChanged(int)"),
         #                        self.fixedChange)
+        self.ui.DistanceFixed.stateChanged.connect(self.fixedChange)
         # QtCore.QObject.connect(self.ui.getRanges, QtCore.SIGNAL("clicked()"),
         #                        self.setParameterRange)
+        self.ui.getRanges.clicked.connect(self.setParameterRange)
 
     def update(self, objectInfo):
         self.ui.distanceName.setText(objectInfo.name)

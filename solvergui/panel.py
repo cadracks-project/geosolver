@@ -33,13 +33,14 @@ class Panel(QtWidgets.QWidget):
         self.ui.stackedWidget.addWidget(AngleDialog(self, self.mainWindow))
 
     def createTriggers(self):
-        pass
-        # TODO : adapt to PyQt5
         # QtCore.QObject.connect(self.ui.treeWidget, QtCore.SIGNAL(
         #     "currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)"),
         #                        self.selectionChanged)
+        self.ui.treeWidget.currentItemChanged.connect(self.selectionChanged)
 
-    # QtCore.QObject.connect(self.ui.tabWidget,QtCore.SIGNAL("currentChanged(int)"), self.tabChanged)
+        # QtCore.QObject.connect(self.ui.tabWidget,
+        #                        QtCore.SIGNAL("currentChanged(int)"),
+        #                        self.tabChanged)
 
     def reset(self):
         index = self.ui.stackedWidget.currentIndex()
@@ -48,7 +49,7 @@ class Panel(QtWidgets.QWidget):
             self.ui.stackedWidget.currentWidget().reset()
 
     def addItemToSelectionList(self, objectName, objectType):
-        newWidget = QtGui.QTreeWidgetItem()
+        newWidget = QtWidgets.QTreeWidgetItem()
         newWidget.setText(0, objectName)
 
         if objectType == ObjectType.POINT:
@@ -112,7 +113,7 @@ class Panel(QtWidgets.QWidget):
             self.ui.treeWidget.setCurrentItem(treeItem)
 
     def updateEdit(self):
-        if self.prototypeManager.objectSelected != None:
+        if self.prototypeManager.objectSelected is not None:
             obj = self.prototypeManager.objectSelected
             if obj.objType == ObjectType.POINT:
                 self.ui.stackedWidget.setCurrentIndex(1)

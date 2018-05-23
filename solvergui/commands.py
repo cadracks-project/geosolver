@@ -6,7 +6,7 @@ from geosolver.matfunc import Vec
 from solvergui.camera import CameraType
 from solvergui.prototypeObjects import PrototypeManager
 
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtXml
 
 
 class Command:
@@ -77,7 +77,8 @@ class UpdateTextInTaskbarCommand(Command):
 
 
 class UpdateToolCommand(Command):
-    """ Update the tools which can be used in any of the viewports, the tool is set for the all
+    """ Update the tools which can be used in any of the viewports,
+    the tool is set for the all
     the viewports. """
 
     def __init__(self, viewportManager):
@@ -104,7 +105,8 @@ class UpdateToolCommand(Command):
 
 
 class UpdateActionCommand(Command):
-    """ If an action for one of the viewports is set, disable all the tools for all of the windows. """
+    """ If an action for one of the viewports is set, disable all the tools
+    for all of the windows. """
 
     def __init__(self, mainWindow):
         Command.__init__(self)

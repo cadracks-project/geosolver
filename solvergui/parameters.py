@@ -31,6 +31,24 @@ class Settings(Singleton):
 
 
 class SketcherData(QtCore.QObject):
+
+    pointColorChanged = QtCore.pyqtSignal(QtGui.QColor, name='pointColorChanged')
+    fPointColorChanged = QtCore.pyqtSignal(QtGui.QColor, name='fPointColorChanged')
+    lineColorChanged = QtCore.pyqtSignal(QtGui.QColor, name='lineColorChanged')
+    angleColorChanged = QtCore.pyqtSignal(QtGui.QColor, name='angleColorChanged')
+    selectionColorChanged = QtCore.pyqtSignal(QtGui.QColor, name='selectionColorChanged')
+    distanceColorChanged = QtCore.pyqtSignal(QtGui.QColor, name='distanceColorChanged')
+    backgroundColorChanged = QtCore.pyqtSignal(QtGui.QColor, name='backgroundColorChanged')
+
+    pointSizeChanged = QtCore.pyqtSignal(int, name='pointSizeChanged')
+    fPointSizeChanged = QtCore.pyqtSignal(int, name='fPointSizeChanged')
+    lineSizeChanged = QtCore.pyqtSignal(int, name='lineSizeChanged')
+    distanceSizeChanged = QtCore.pyqtSignal(int, name='distanceSizeChanged')
+    showGridChanged = QtCore.pyqtSignal(name='showGridChanged')
+
+    gridWidthChanged = QtCore.pyqtSignal(int, name='gridWidthChanged')
+    gridHeightChanged = QtCore.pyqtSignal(int, name='gridHeightChanged')
+
     def __init__(self):
         QtCore.QObject.__init__(self)
         self.selectColor = QtGui.QColor(255, 255, 0)
@@ -82,17 +100,20 @@ class SketcherData(QtCore.QObject):
         self.angleColor = QtGui.QColor(settings.value("angleColor"))
         self.bgColor = QtGui.QColor(settings.value("backgroundColor"))
 
-        self.pointRadius = settings.value("pointRadius").toInt()[0]
-        self.lineRadius = settings.value("lineRadius").toInt()[0]
-        self.fPointRadius = settings.value("fixedPointRadius").toInt()[0]
-        self.distanceRadius = settings.value("distanceRadius").toInt()[0]
-        self.showGrid = settings.value("showGrid").toBool()
-        self.gridWidth = settings.value("gridWidth").toInt()[0]
-        self.gridHeight = settings.value("gridHeight").toInt()[0]
+        self.pointRadius = settings.value("pointRadius", type=int)
+        self.lineRadius = settings.value("lineRadius", type=int)
+        self.fPointRadius = settings.value("fixedPointRadius", type=int)
+        self.distanceRadius = settings.value("distanceRadius", type=int)
+        self.showGrid = settings.value("showGrid", type=bool)
+        self.gridWidth = settings.value("gridWidth", type=int)
+        self.gridHeight = settings.value("gridHeight", type=int)
         settings.endGroup()
 
 
 class DecompositionViewData(QtCore.QObject):
+
+    treeOrientationChanged = QtCore.pyqtSignal(name='treeOrientationChanged')
+
     def __init__(self):
         QtCore.QObject.__init__(self)
         self.treeAlignment = TreeOrientation.TOP
@@ -108,12 +129,38 @@ class DecompositionViewData(QtCore.QObject):
 
     def load(self, settings):
         settings.beginGroup("decompositionview")
-        self.treeAlignment = settings.value("treeAlignment").toInt()[0]
-        self.treeConnection = settings.value("treeConnection").toInt()[0]
+        self.treeAlignment = settings.value("treeAlignment", type=int)
+        self.treeConnection = settings.value("treeConnection", type=int)
         settings.endGroup()
 
 
 class SolutionViewData(QtCore.QObject):
+
+    pointColorChanged = QtCore.pyqtSignal(QtGui.QColor, name='pointColorChanged')
+    fPointColorChanged = QtCore.pyqtSignal(QtGui.QColor, name='fPointColorChanged')
+    lineColorChanged = QtCore.pyqtSignal(QtGui.QColor, name='lineColorChanged')
+    angleColorChanged = QtCore.pyqtSignal(QtGui.QColor, name='angleColorChanged')
+    selectionColorChanged = QtCore.pyqtSignal(QtGui.QColor, name='selectionColorChanged')
+    distanceColorChanged = QtCore.pyqtSignal(QtGui.QColor, name='distanceColorChanged')
+    # backgroundColorChanged = QtCore.pyqtSignal(QtGui.QColor, name='backgroundColorChanged')
+
+    showGridChanged = QtCore.pyqtSignal(name='showGridChanged')
+    gridWidthChanged = QtCore.pyqtSignal(int, name='gridWidthChanged')
+    gridHeightChanged = QtCore.pyqtSignal(int, name='gridHeightChanged')
+
+    backgroundColorChanged = QtCore.pyqtSignal(QtGui.QColor,
+                                               name='backgroundColorChanged')
+    pointSizeChanged = QtCore.pyqtSignal(int, name='pointSizeChanged')
+    fPointSizeChanged = QtCore.pyqtSignal(int, name='fPointSizeChanged')
+    lineSizeChanged = QtCore.pyqtSignal(int, name='lineSizeChanged')
+    distanceSizeChanged = QtCore.pyqtSignal(int, name='distanceSizeChanged')
+
+    pointVisChanged = QtCore.pyqtSignal(name='pointVisChanged')
+    fpointVisChanged = QtCore.pyqtSignal(name='fpointVisChanged')
+    lineVisChanged = QtCore.pyqtSignal(name='lineVisChanged')
+    angleVisChanged = QtCore.pyqtSignal(name='angleVisChanged')
+    distanceVisChanged = QtCore.pyqtSignal(name='distanceVisChanged')
+
     def __init__(self):
         QtCore.QObject.__init__(self)
         self.pointColor = QtGui.QColor(33, 163, 125)  # [0.13, 0.64, 0.49]

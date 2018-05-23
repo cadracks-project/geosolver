@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import preferencesDlg, compositionView
 from includes import *
 from viewportManager import *
@@ -32,7 +34,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.createStatusBar()
         self.createToolbar()
 
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,800,600).size()).expandedTo(self.minimumSizeHint()))
+        self.resize(QtCore.QSize(QtCore.QRect(0, 0, 800, 600).size()).expandedTo(self.minimumSizeHint()))
 
     def createActions(self):
         # the actions which the user can select from the menu
@@ -90,46 +92,49 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.actionSolutionView = QtWidgets.QAction(self.tr("Solution View"), self)
         self.actionPreferences = QtWidgets.QAction(self.tr("Preferences"), self)
 
-    def createTriggers(self):
-        pass
-        # TODO : adapt to PyQt5
+    def createAction(self, text, slot=None, signal='triggered'):
+        action = QAction(text, self)
+        signal_dict = {'triggered': action.triggered, 'changed': action.changed,
+                       'toggled': action.toggled, 'hovered': action.hovered}
+        if slot is not None:
+            # self.connect(action, SIGNAL(signal), slot)
+            signal_dict[signal].connect(slot)
+        return action
 
+    def createTriggers(self):
         # # menu actions
-        # QtCore.QObject.connect(self.actionNew,QtCore.SIGNAL("triggered()"),self.new)
-        # QtCore.QObject.connect(self.actionQuit,QtCore.SIGNAL("triggered()"),self.close)
-        # QtCore.QObject.connect(self.actionSave,QtCore.SIGNAL("triggered()"),self.save)
-        # QtCore.QObject.connect(self.actionSave_As,QtCore.SIGNAL("triggered()"),self.saveAs)
-        # QtCore.QObject.connect(self.actionImport,QtCore.SIGNAL("triggered()"),self.importFile)
-        # QtCore.QObject.connect(self.actionOpen,QtCore.SIGNAL("triggered()"),self.load)
+        self.actionNew.triggered.connect(self.new)
+        self.actionQuit.triggered.connect(self.close)
+        self.actionSave.triggered.connect(self.save)
+        self.actionSave_As.triggered.connect(self.saveAs)
+        self.actionImport.triggered.connect(self.importFile)
+        self.actionOpen.triggered.connect(self.load)
         #
-        # QtCore.QObject.connect(self.actionCompositionView,QtCore.SIGNAL("triggered()"), self.showCompositionView)
-        # QtCore.QObject.connect(self.actionSolutionView,QtCore.SIGNAL("triggered()"), self.showSolutionView)
-        # QtCore.QObject.connect(self.actionPreferences,QtCore.SIGNAL("triggered()"), self.showPreferencesDlg)
+        self.actionCompositionView.triggered.connect(self.showCompositionView)
+        self.actionSolutionView.triggered.connect(self.showSolutionView)
+        self.actionPreferences.triggered.connect(self.showPreferencesDlg)
         #
-        # QtCore.QObject.connect(self.actionSelect,QtCore.SIGNAL("changed()"), self.selectTriggered)
-        # QtCore.QObject.connect(self.actionPlacePoint,QtCore.SIGNAL("changed()"), self.placePointTriggered)
-        # QtCore.QObject.connect(self.actionMove,QtCore.SIGNAL("changed()"), self.moveTriggered)
-        # QtCore.QObject.connect(self.actionConnect,QtCore.SIGNAL("changed()"), self.connectTriggered)
-        # QtCore.QObject.connect(self.actionDistanceConstraint,QtCore.SIGNAL("changed()"), self.distanceConstraintTriggered)
-        # QtCore.QObject.connect(self.actionMinMaxView,QtCore.SIGNAL("triggered()"), self.viewportManager.minmaxView)
+        self.actionSelect.changed.connect(self.selectTriggered)
+        self.actionPlacePoint.changed.connect(self.placePointTriggered)
+        self.actionMove.changed.connect(self.moveTriggered)
+        self.actionConnect.changed.connect(self.connectTriggered)
+        self.actionDistanceConstraint.changed.connect(self.distanceConstraintTriggered)
+        self.actionMinMaxView.triggered.connect(self.viewportManager.minmaxView)
         #
+        self.actionSolve.triggered.connect(PrototypeManager().solve)
+        self.actionSolve.triggered.connect(self.compositionView.createDecomposition)
+        self.actionSolve.triggered.connect(self.solutionView.createSolution)
+        self.actionSolve.triggered.connect(self.viewportManager.updateSolution)
+        self.actionSolve.triggered.connect(self.viewportManager.updateDecomposition)
+        self.actionSolve.triggered.connect(self.viewportManager.updateViewports)
+        self.actionSolve.triggered.connect(self.updateConstraintInfo)
         #
-        # QtCore.QObject.connect(self.actionSolve,QtCore.SIGNAL("triggered()"), PrototypeManager().solve)
-        # QtCore.QObject.connect(self.actionSolve,QtCore.SIGNAL("triggered()"), self.compositionView.createDecomposition)
-        # QtCore.QObject.connect(self.actionSolve,QtCore.SIGNAL("triggered()"), self.solutionView.createSolution)
-        # QtCore.QObject.connect(self.actionSolve,QtCore.SIGNAL("triggered()"), self.viewportManager.updateSolution)
-        # QtCore.QObject.connect(self.actionSolve,QtCore.SIGNAL("triggered()"), self.viewportManager.updateDecomposition)
-        # QtCore.QObject.connect(self.actionSolve,QtCore.SIGNAL("triggered()"), self.viewportManager.updateViewports)
-        # QtCore.QObject.connect(self.actionSolve,QtCore.SIGNAL("triggered()"), self.updateConstraintInfo)
-        #
-        #
-        # QtCore.QObject.connect(self.actionClusters,QtCore.SIGNAL("triggered()"), self.showClusters)
-        # QtCore.QObject.connect(self.actionDistance,QtCore.SIGNAL("changed()"), self.placeDistanceTriggered)
-        # QtCore.QObject.connect(self.actionAngleConstraint,QtCore.SIGNAL("changed()"), self.placeAngleConstraintTriggered)
-        # QtCore.QObject.connect(self.actionFixedConstraint,QtCore.SIGNAL("changed()"), self.placeFixedConstraintTriggered)
+        self.actionClusters.triggered.connect(self.showClusters)
+        self.actionDistance.changed.connect(self.placeDistanceTriggered)
+        self.actionAngleConstraint.changed.connect(self.placeAngleConstraintTriggered)
+        self.actionFixedConstraint.changed.connect(self.placeFixedConstraintTriggered)
         # # Rick 20090522
         # QtCore.QObject.connect(self.actionGenerate,QtCore.SIGNAL("triggered()"),self.generateRandom)
-
 
     def createMenus(self):
         # connect the defined actions with menu items
@@ -260,11 +265,12 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.updateTool.execute(PlaceAngleConstraintTool())
 
     def new(self):
-        result = QtGui.QMessageBox.warning(self, self.tr("New Scene"), self.tr("The scene may have been modified.\n" "Do you want to save your changes?"), \
-                                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel, QtGui.QMessageBox.Yes)
-        if result == QtGui.QMessageBox.Yes:
+        result = QtWidgets.QMessageBox.warning(self, self.tr("New Scene"),
+                                               self.tr("The scene may have been modified.\n" "Do you want to save your changes?"),
+                                               QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel, QtWidgets.QMessageBox.Yes)
+        if result == QtWidgets.QMessageBox.Yes:
             self.save()
-        elif result == QtGui.QMessageBox.Cancel:
+        elif result == QtWidgets.QMessageBox.Cancel:
             return
 
         self.newCommand = ClearSceneCommand(self)
@@ -272,15 +278,18 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(self.tr("Geometric Constraint Solver"))
 
     def load(self):
-        result = QtGui.QMessageBox.warning(self, self.tr("Scene Changes"), self.tr("The scene may have been modified.\n" "Do you want to save your changes?"), \
-                                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel, QtGui.QMessageBox.Yes)
-        if result == QtGui.QMessageBox.Yes:
+        result = QtWidgets.QMessageBox.warning(self, self.tr("Scene Changes"), self.tr("The scene may have been modified.\n" "Do you want to save your changes?"), \
+                                               QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel, QtWidgets.QMessageBox.Yes)
+        if result == QtWidgets.QMessageBox.Yes:
             self.save()
-        elif result == QtGui.QMessageBox.Cancel:
+        elif result == QtWidgets.QMessageBox.Cancel:
             return
 
-        filename = QtGui.QFileDialog.getOpenFileName(self, self.tr("Open File"), "", self.tr("GCS Files (*.gcs)"))
-        if not filename.isEmpty():
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(self,
+                                                            self.tr("Open File"),
+                                                            "",
+                                                            self.tr("GCS Files (*.gcs)"))
+        if filename:
             self.newCommand = ClearSceneCommand(self)
             self.newCommand.execute()
             self.saveFileName = filename
@@ -291,29 +300,35 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.setWindowTitle("- " + title + self.tr(" - Geometric Constraint Solver"))
 
     def save(self):
-        if self.saveFileName.isEmpty():
+        if not self.saveFileName:
             self.saveAs()
         else:
             self.saveCommand = SaveCommand(self)
             self.saveCommand.execute(self.saveFileName)
-            nameForTitle = QtCore.QString(self.saveFileName)
+            nameForTitle = self.saveFileName
             title = nameForTitle.remove(0, nameForTitle.lastIndexOf("/")+1)
             self.setWindowTitle("- " + title + self.tr(" - Geometric Constraint Solver"))
 
     def saveAs(self):
-        saveDialog = QtGui.QFileDialog()
+        saveDialog = QtWidgets.QFileDialog()
         saveDialog.setDefaultSuffix(".gcs")
-        filename = saveDialog.getSaveFileName(self, self.tr("Save As.."), "", self.tr("GCS Files (*.gcs)"))
+        filename = saveDialog.getSaveFileName(self,
+                                              self.tr("Save As.."),
+                                              "",
+                                              self.tr("GCS Files (*.gcs)"))
 
-        if not filename.isEmpty():
-            if not filename.endsWith(saveDialog.defaultSuffix()):
+        if filename:
+            if not filename.endswith(saveDialog.defaultSuffix()):
                 filename.append(saveDialog.defaultSuffix())
             self.saveFileName = filename
             self.save()
 
     def importFile(self):
-        filename = QtGui.QFileDialog.getOpenFileName(self, self.tr("Import File"), "", self.tr("GCS Files (*.gcs)"))
-        if not filename.isEmpty():
+        filename = QtWidgets.QFileDialog.getOpenFileName(self,
+                                                         self.tr("Import File"),
+                                                         "",
+                                                         self.tr("GCS Files (*.gcs)"))
+        if filename:
             self.importCommand = ImportCommand(self)
             self.importCommand.execute(filename)
 
@@ -333,7 +348,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         ## set window title
         #title = "Untitled"
         #self.setWindowTitle(title + self.tr(" - Geometric Constraint Solver"))
-
 
     def tr(self, string):
         return QtWidgets.QApplication.translate("Ui_MainWindow", string, None)

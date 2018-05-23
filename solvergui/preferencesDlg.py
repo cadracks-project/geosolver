@@ -4,18 +4,18 @@ from ui_preferencesDlg import Ui_preferencesDialog
 from ui_prefSketcher import Ui_sketcherForm
 from ui_prefViews import Ui_viewsForm
 
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets, QtCore
 
 
 class Preferences:
     def __init__(self, preferenceHandler):
         self.preferenceHandler = preferenceHandler
-        self.widget = QtGui.QWidget()
+        self.widget = QtWidgets.QWidget()
         self.name = ""
         self.settings = Settings()
 
     def updateIconColor(self, icon, iconButton, color):
-        if not color == None:
+        if color is not None:
             icon.fill(color)
         else:
             icon.fill(QtGui.QColor(0, 0, 0))
@@ -68,44 +68,63 @@ class SketcherPreferences(Preferences):
         self.ui.gridHeightSpin.setValue(self.settings.sketcherData.gridHeight)
 
     def createTriggers(self):
-        QtCore.QObject.connect(self.ui.showgridCheckBox,
-                               QtCore.SIGNAL("stateChanged(int)"),
-                               self.showGrid)
-        QtCore.QObject.connect(self.ui.pointSizeSpin,
-                               QtCore.SIGNAL("valueChanged(int)"),
-                               self.updatePointSize)
-        QtCore.QObject.connect(self.ui.fPointSizeSpin,
-                               QtCore.SIGNAL("valueChanged(int)"),
-                               self.updateFPointSize)
-        QtCore.QObject.connect(self.ui.lineSizeSpin,
-                               QtCore.SIGNAL("valueChanged(int)"),
-                               self.updateLineSize)
-        QtCore.QObject.connect(self.ui.distanceSizeSpin,
-                               QtCore.SIGNAL("valueChanged(int)"),
-                               self.updateDistanceSize)
-        QtCore.QObject.connect(self.ui.gridWidthSpin,
-                               QtCore.SIGNAL("valueChanged(int)"),
-                               self.updateGridWidth)
-        QtCore.QObject.connect(self.ui.gridHeightSpin,
-                               QtCore.SIGNAL("valueChanged(int)"),
-                               self.updateGridHeight)
+        # QtCore.QObject.connect(self.ui.showgridCheckBox,
+        #                        QtCore.SIGNAL("stateChanged(int)"),
+        #                        self.showGrid)
+        self.ui.showgridCheckBox.stateChanged.connect(self.showGrid)
+        # QtCore.QObject.connect(self.ui.pointSizeSpin,
+        #                        QtCore.SIGNAL("valueChanged(int)"),
+        #                        self.updatePointSize)
+        self.ui.pointSizeSpin.valueChanged.connect(self.updatePointSize)
+        # QtCore.QObject.connect(self.ui.fPointSizeSpin,
+        #                        QtCore.SIGNAL("valueChanged(int)"),
+        #                        self.updateFPointSize)
+        self.ui.fPointSizeSpin.valueChanged.connect(self.updateFPointSize)
+        # QtCore.QObject.connect(self.ui.lineSizeSpin,
+        #                        QtCore.SIGNAL("valueChanged(int)"),
+        #                        self.updateLineSize)
+        self.ui.lineSizeSpin.valueChanged.connect(self.updateLineSize)
+        # QtCore.QObject.connect(self.ui.distanceSizeSpin,
+        #                        QtCore.SIGNAL("valueChanged(int)"),
+        #                        self.updateDistanceSize)
+        self.ui.distanceSizeSpin.valueChanged.connect(self.updateDistanceSize)
+        # QtCore.QObject.connect(self.ui.gridWidthSpin,
+        #                        QtCore.SIGNAL("valueChanged(int)"),
+        #                        self.updateGridWidth)
+        self.ui.gridWidthSpin.valueChanged.connect(self.updateGridWidth)
+        # QtCore.QObject.connect(self.ui.gridHeightSpin,
+        #                        QtCore.SIGNAL("valueChanged(int)"),
+        #                        self.updateGridHeight)
+        self.ui.gridHeightSpin.valueChanged.connect(self.updateGridHeight)
 
-        QtCore.QObject.connect(self.ui.fPointClrButton,
-                               QtCore.SIGNAL("clicked()"), self.setFPointColor)
-        QtCore.QObject.connect(self.ui.dConstraintClrButton,
-                               QtCore.SIGNAL("clicked()"),
-                               self.setDistanceColor)
-        QtCore.QObject.connect(self.ui.angleClrButton,
-                               QtCore.SIGNAL("clicked()"), self.setAngleColor)
-        QtCore.QObject.connect(self.ui.selectClrButton,
-                               QtCore.SIGNAL("clicked()"),
-                               self.setSelectionColor)
-        QtCore.QObject.connect(self.ui.distanceClrButton,
-                               QtCore.SIGNAL("clicked()"), self.setLineColor)
-        QtCore.QObject.connect(self.ui.bgClrButton, QtCore.SIGNAL("clicked()"),
-                               self.setBackgroundColor)
-        QtCore.QObject.connect(self.ui.pointClrButton,
-                               QtCore.SIGNAL("clicked()"), self.setPointColor)
+        # QtCore.QObject.connect(self.ui.fPointClrButton,
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.setFPointColor)
+        self.ui.fPointClrButton.clicked.connect(self.setFPointColor)
+        # QtCore.QObject.connect(self.ui.dConstraintClrButton,
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.setDistanceColor)
+        self.ui.dConstraintClrButton.clicked.connect(self.setDistanceColor)
+        # QtCore.QObject.connect(self.ui.angleClrButton,
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.setAngleColor)
+        self.ui.angleClrButton.clicked.connect(self.setSelectionColor)
+        # QtCore.QObject.connect(self.ui.selectClrButton,
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.setSelectionColor)
+        self.ui.selectClrButton.clicked.connect(self.setSelectionColor)
+        # QtCore.QObject.connect(self.ui.distanceClrButton,
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.setLineColor)
+        self.ui.distanceClrButton.clicked.connect(self.setLineColor)
+        # QtCore.QObject.connect(self.ui.bgClrButton,
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.setBackgroundColor)
+        self.ui.bgClrButton.clicked.connect(self.setBackgroundColor)
+        # QtCore.QObject.connect(self.ui.pointClrButton,
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.setPointColor)
+        self.ui.pointClrButton.clicked.connect(self.setPointColor)
 
     def showGrid(self, state):
         if state == QtCore.Qt.Unchecked:
@@ -144,71 +163,79 @@ class SketcherPreferences(Preferences):
                                         height)
 
     def setPointColor(self):
-        color = QtGui.QColorDialog.getColor(
+        color = QtWidgets.QColorDialog.getColor(
             self.settings.sketcherData.pointColor)
         if color.isValid():
             self.settings.sketcherData.pointColor = color
             self.updateIconColor(self.pointIcon, self.ui.pointClrButton, color)
-            self.settings.sketcherData.emit(QtCore.SIGNAL("pointColorChanged"),
-                                            color)
+            # self.settings.sketcherData.emit(QtCore.SIGNAL("pointColorChanged"),
+            #                                 color)
+
+            self.settings.sketcherData.pointColorChanged.emit(color)
 
     def setFPointColor(self):
-        color = QtGui.QColorDialog.getColor(
+        color = QtWidgets.QColorDialog.getColor(
             self.settings.sketcherData.fPointColor)
         if color.isValid():
             self.settings.sketcherData.fPointColor = color
             self.updateIconColor(self.fPointIcon, self.ui.fPointClrButton,
                                  color)
-            self.settings.sketcherData.emit(QtCore.SIGNAL("fPointColorChanged"),
-                                            color)
+            # self.settings.sketcherData.emit(QtCore.SIGNAL("fPointColorChanged"),
+            #                                 color)
+            self.settings.sketcherData.fPointColorChanged.emit(color)
 
     def setLineColor(self):
-        color = QtGui.QColorDialog.getColor(
+        color = QtWidgets.QColorDialog.getColor(
             self.settings.sketcherData.lineColor)
         if color.isValid():
             self.settings.sketcherData.lineColor = color
             self.updateIconColor(self.distanceIcon, self.ui.distanceClrButton,
                                  color)
-            self.settings.sketcherData.emit(QtCore.SIGNAL("lineColorChanged"),
-                                            color)
+            # self.settings.sketcherData.emit(QtCore.SIGNAL("lineColorChanged"),
+            #                                 color)
+            self.settings.sketcherData.lineColorChanged.emit(color)
 
     def setAngleColor(self):
-        color = QtGui.QColorDialog.getColor(
+        color = QtWidgets.QColorDialog.getColor(
             self.settings.sketcherData.angleColor)
         if color.isValid():
             self.settings.sketcherData.angleColor = color
             self.updateIconColor(self.angleIcon, self.ui.angleClrButton, color)
-            self.settings.sketcherData.emit(QtCore.SIGNAL("angleColorChanged"),
-                                            color)
+            # self.settings.sketcherData.emit(QtCore.SIGNAL("angleColorChanged"),
+            #                                 color)
+            self.settings.sketcherData.angleColorChanged.emit(color)
 
     def setSelectionColor(self):
-        color = QtGui.QColorDialog.getColor(
+        color = QtWidgets.QColorDialog.getColor(
             self.settings.sketcherData.selectColor)
         if color.isValid():
             self.settings.sketcherData.selectColor = color
             self.updateIconColor(self.selectionIcon, self.ui.selectClrButton,
                                  color)
-            self.settings.sketcherData.emit(
-                QtCore.SIGNAL("selectionColorChanged"), color)
+            # self.settings.sketcherData.emit(
+            #     QtCore.SIGNAL("selectionColorChanged"), color)
+            self.settings.sketcherData.selectionColorChanged.emit(color)
 
     def setDistanceColor(self):
-        color = QtGui.QColorDialog.getColor(
+        color = QtWidgets.QColorDialog.getColor(
             self.settings.sketcherData.distanceColor)
         if color.isValid():
             self.settings.sketcherData.distanceColor = color
             self.updateIconColor(self.dConstraintIcon,
                                  self.ui.dConstraintClrButton, color)
-            self.settings.sketcherData.emit(
-                QtCore.SIGNAL("distanceColorChanged"), color)
+            # self.settings.sketcherData.emit(
+            #     QtCore.SIGNAL("distanceColorChanged"), color)
+            self.settings.sketcherData.distanceColorChanged.emit(color)
 
     def setBackgroundColor(self):
-        color = QtGui.QColorDialog.getColor(self.settings.sketcherData.bgColor)
+        color = QtWidgets.QColorDialog.getColor(self.settings.sketcherData.bgColor)
         if color.isValid():
             self.settings.sketcherData.bgColor = color
             self.updateIconColor(self.backgroundIcon, self.ui.bgClrButton,
                                  color)
-            self.settings.sketcherData.emit(
-                QtCore.SIGNAL("backgroundColorChanged"), color)
+            # self.settings.sketcherData.emit(
+            #     QtCore.SIGNAL("backgroundColorChanged"), color)
+            self.settings.sketcherData.backgroundColorChanged.emit(color)
 
 
 class ViewsPreferences(Preferences):
@@ -250,14 +277,17 @@ class DecompositionViewPreferences:
                 self.ui.alignTreeComboBox.findText("Left"))
 
     def createTriggers(self):
-        QtCore.QObject.connect(self.ui.radioCurvedButton,
-                               QtCore.SIGNAL("toggled(bool)"),
-                               self.curvedConnectionChanged)
-        QtCore.QObject.connect(self.ui.radioConnectionButton,
-                               QtCore.SIGNAL("toggled(bool)"),
-                               self.lineConnectionChanged)
-        QtCore.QObject.connect(self.ui.alignTreeComboBox, QtCore.SIGNAL(
-            "currentIndexChanged(const QString&)"), self.treeAlignmentChanged)
+        # QtCore.QObject.connect(self.ui.radioCurvedButton,
+        #                        QtCore.SIGNAL("toggled(bool)"),
+        #                        self.curvedConnectionChanged)
+        self.ui.radioCurvedButton.toggled.connect(self.curvedConnectionChanged)
+        # QtCore.QObject.connect(self.ui.radioConnectionButton,
+        #                        QtCore.SIGNAL("toggled(bool)"),
+        #                        self.lineConnectionChanged)
+        self.ui.radioConnectionButton.toggled.connect(self.lineConnectionChanged)
+        # QtCore.QObject.connect(self.ui.alignTreeComboBox, QtCore.SIGNAL(
+        #     "currentIndexChanged(const QString&)"), self.treeAlignmentChanged)
+        self.ui.alignTreeComboBox.currentIndexChanged.connect(self.treeAlignmentChanged)
 
     def lineConnectionChanged(self, state):
         if state:
@@ -328,58 +358,80 @@ class SolutionViewPreferences:
         self.ui.vDistance.setChecked(self.settings.svData.distanceVisible)
 
     def createTriggers(self):
-        QtCore.QObject.connect(self.ui.svShowgrid,
-                               QtCore.SIGNAL("stateChanged(int)"),
-                               self.showGrid)
-        QtCore.QObject.connect(self.ui.svPointSizeSpin,
-                               QtCore.SIGNAL("valueChanged(int)"),
-                               self.updatePointSize)
-        QtCore.QObject.connect(self.ui.svfPointSizeSpin,
-                               QtCore.SIGNAL("valueChanged(int)"),
-                               self.updateFPointSize)
-        QtCore.QObject.connect(self.ui.svLineSizeSpin,
-                               QtCore.SIGNAL("valueChanged(int)"),
-                               self.updateLineSize)
-        QtCore.QObject.connect(self.ui.svDistanceSizeSpin,
-                               QtCore.SIGNAL("valueChanged(int)"),
-                               self.updateDistanceSize)
-        QtCore.QObject.connect(self.ui.svGridWidthSpin,
-                               QtCore.SIGNAL("valueChanged(int)"),
-                               self.updateGridWidth)
-        QtCore.QObject.connect(self.ui.svGridHeightSpin,
-                               QtCore.SIGNAL("valueChanged(int)"),
-                               self.updateGridHeight)
+        # QtCore.QObject.connect(self.ui.svShowgrid,
+        #                        QtCore.SIGNAL("stateChanged(int)"),
+        #                        self.showGrid)
+        self.ui.svShowgrid.stateChanged.connect(self.showGrid)
+        # QtCore.QObject.connect(self.ui.svPointSizeSpin,
+        #                        QtCore.SIGNAL("valueChanged(int)"),
+        #                        self.updatePointSize)
+        self.ui.svPointSizeSpin.valueChanged.connect(self.updatePointSize)
+        # QtCore.QObject.connect(self.ui.svfPointSizeSpin,
+        #                        QtCore.SIGNAL("valueChanged(int)"),
+        #                        self.updateFPointSize)
+        self.ui.svfPointSizeSpin.valueChanged.connect(self.updateFPointSize)
+        # QtCore.QObject.connect(self.ui.svLineSizeSpin,
+        #                        QtCore.SIGNAL("valueChanged(int)"),
+        #                        self.updateLineSize)
+        self.ui.svLineSizeSpin.valueChanged.connect(self.updateLineSize)
+        # QtCore.QObject.connect(self.ui.svDistanceSizeSpin,
+        #                        QtCore.SIGNAL("valueChanged(int)"),
+        #                        self.updateDistanceSize)
+        self.ui.svDistanceSizeSpin.valueChanged.connect(self.updateDistanceSize)
+        # QtCore.QObject.connect(self.ui.svGridWidthSpin,
+        #                        QtCore.SIGNAL("valueChanged(int)"),
+        #                        self.updateGridWidth)
+        self.ui.svGridWidthSpin.valueChanged.connect(self.updateGridWidth)
+        # QtCore.QObject.connect(self.ui.svGridHeightSpin,
+        #                        QtCore.SIGNAL("valueChanged(int)"),
+        #                        self.updateGridHeight)
+        self.ui.svGridHeightSpin.valueChanged.connect(self.updateGridHeight)
 
-        QtCore.QObject.connect(self.ui.svfPointClrButton,
-                               QtCore.SIGNAL("clicked()"), self.setFPointColor)
-        QtCore.QObject.connect(self.ui.svdConstraintClrButton,
-                               QtCore.SIGNAL("clicked()"),
-                               self.setDistanceColor)
-        QtCore.QObject.connect(self.ui.svAngleClrButton,
-                               QtCore.SIGNAL("clicked()"), self.setAngleColor)
-        QtCore.QObject.connect(self.ui.svDistanceClrButton,
-                               QtCore.SIGNAL("clicked()"), self.setLineColor)
-        QtCore.QObject.connect(self.ui.svBgClrButton,
-                               QtCore.SIGNAL("clicked()"),
-                               self.setBackgroundColor)
-        QtCore.QObject.connect(self.ui.svPointClrButton,
-                               QtCore.SIGNAL("clicked()"), self.setPointColor)
+        # QtCore.QObject.connect(self.ui.svfPointClrButton,
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.setFPointColor)
+        self.ui.svfPointClrButton.clicked.connect(self.setFPointColor)
+        # QtCore.QObject.connect(self.ui.svdConstraintClrButton,
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.setDistanceColor)
+        self.ui.svdConstraintClrButton.clicked.connect(self.setDistanceColor)
+        # QtCore.QObject.connect(self.ui.svAngleClrButton,
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.setAngleColor)
+        self.ui.svAngleClrButton.clicked.connect(self.setAngleColor)
+        # QtCore.QObject.connect(self.ui.svDistanceClrButton,
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.setLineColor)
+        self.ui.svDistanceClrButton.clicked.connect(self.setLineColor)
+        # QtCore.QObject.connect(self.ui.svBgClrButton,
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.setBackgroundColor)
+        self.ui.svBgClrButton.clicked.connect(self.setBackgroundColor)
+        # QtCore.QObject.connect(self.ui.svPointClrButton,
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.setPointColor)
+        self.ui.svPointClrButton.clicked.connect(self.setPointColor)
 
-        QtCore.QObject.connect(self.ui.vPoint,
-                               QtCore.SIGNAL("stateChanged(int)"),
-                               self.setPointVisibility)
-        QtCore.QObject.connect(self.ui.vAngle,
-                               QtCore.SIGNAL("stateChanged(int)"),
-                               self.setAngleVisibility)
-        QtCore.QObject.connect(self.ui.vfPoint,
-                               QtCore.SIGNAL("stateChanged(int)"),
-                               self.setFixedPointVisibility)
-        QtCore.QObject.connect(self.ui.vDistance,
-                               QtCore.SIGNAL("stateChanged(int)"),
-                               self.setDistanceVisibility)
-        QtCore.QObject.connect(self.ui.vLine,
-                               QtCore.SIGNAL("stateChanged(int)"),
-                               self.setLineVisibility)
+        # QtCore.QObject.connect(self.ui.vPoint,
+        #                        QtCore.SIGNAL("stateChanged(int)"),
+        #                        self.setPointVisibility)
+        self.ui.vPoint.stateChanged.connect(self.setPointVisibility)
+        # QtCore.QObject.connect(self.ui.vAngle,
+        #                        QtCore.SIGNAL("stateChanged(int)"),
+        #                        self.setAngleVisibility)
+        self.ui.vAngle.stateChanged.connect(self.setAngleVisibility)
+        # QtCore.QObject.connect(self.ui.vfPoint,
+        #                        QtCore.SIGNAL("stateChanged(int)"),
+        #                        self.setFixedPointVisibility)
+        self.ui.vfPoint.stateChanged.connect(self.setFixedPointVisibility)
+        # QtCore.QObject.connect(self.ui.vDistance,
+        #                        QtCore.SIGNAL("stateChanged(int)"),
+        #                        self.setDistanceVisibility)
+        self.ui.vDistance.stateChanged.connect(self.setDistanceVisibility)
+        # QtCore.QObject.connect(self.ui.vLine,
+        #                        QtCore.SIGNAL("stateChanged(int)"),
+        #                        self.setLineVisibility)
+        self.ui.vLine.stateChanged.connect(self.setLineVisibility)
 
     def showGrid(self, state):
         if state == QtCore.Qt.Unchecked:
@@ -439,7 +491,7 @@ class SolutionViewPreferences:
             self.settings.svData.emit(QtCore.SIGNAL("lineColorChanged"), color)
 
     def setAngleColor(self):
-        color = QtGui.QColorDialog.getColor(
+        color = QtWidgets.QColorDialog.getColor(
             self.settings.sketcherData.angleColor)
         if color.isValid():
             self.settings.svData.angleColor = color
@@ -448,7 +500,7 @@ class SolutionViewPreferences:
             self.settings.svData.emit(QtCore.SIGNAL("angleColorChanged"), color)
 
     def setDistanceColor(self):
-        color = QtGui.QColorDialog.getColor(self.settings.svData.distanceColor)
+        color = QtWidgets.QColorDialog.getColor(self.settings.svData.distanceColor)
         if color.isValid():
             self.settings.svData.distanceColor = color
             self.preferences.updateIconColor(self.dConstraintIcon,
@@ -458,7 +510,7 @@ class SolutionViewPreferences:
                                       color)
 
     def setBackgroundColor(self):
-        color = QtGui.QColorDialog.getColor(self.settings.svData.bgColor)
+        color = QtWidgets.QColorDialog.getColor(self.settings.svData.bgColor)
         if color.isValid():
             self.settings.svData.bgColor = color
             self.preferences.updateIconColor(self.backgroundIcon,
@@ -509,7 +561,7 @@ class SolutionViewPreferences:
 
 class PreferencesDlg(QtWidgets.QDialog):
     def __init__(self, viewportMngr, parent=None):
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.viewportManager = viewportMngr
         self.settings = Settings()
         self.ui = Ui_preferencesDialog()
@@ -518,13 +570,18 @@ class PreferencesDlg(QtWidgets.QDialog):
         self.preferencePages = []
         self.initPreferences()
 
-        QtCore.QObject.connect(self.ui.contentsWidget, QtCore.SIGNAL(
-            "currentItemChanged(QListWidgetItem*,QListWidgetItem*)"),
-                               self.changePage)
-        QtCore.QObject.connect(self.ui.closeButton, QtCore.SIGNAL("clicked()"),
-                               self.closeClicked)
-        QtCore.QObject.connect(self, QtCore.SIGNAL("finished(int)"),
-                               self.closeClicked)
+        # QtCore.QObject.connect(self.ui.contentsWidget, QtCore.SIGNAL(
+        #     "currentItemChanged(QListWidgetItem*,QListWidgetItem*)"),
+        #                        self.changePage)
+        self.ui.contentsWidget.currentItemChanged.connect(self.changePage)
+        # QtCore.QObject.connect(self.ui.closeButton,
+        #                        QtCore.SIGNAL("clicked()"),
+        #                        self.closeClicked)
+        self.ui.closeButton.clicked.connect(self.closeClicked)
+        # QtCore.QObject.connect(self,
+        #                        QtCore.SIGNAL("finished(int)"),
+        #                        self.closeClicked)
+        self.finished.connect(self.closeClicked)
 
     def initPreferences(self):
         self.preferencePages += [SketcherPreferences(self)]
@@ -538,10 +595,9 @@ class PreferencesDlg(QtWidgets.QDialog):
 
     def addPreferencePage(self, name, widget):
         self.ui.pagesWidget.addWidget(widget)
-        item = QtGui.QListWidgetItem(self.ui.contentsWidget)
+        item = QtWidgets.QListWidgetItem(self.ui.contentsWidget)
         item.setText(
-            QtGui.QApplication.translate("preferencesDialog", name, None,
-                                         QtGui.QApplication.UnicodeUTF8))
+            QtWidgets.QApplication.translate("preferencesDialog", name, None))
 
     def closeClicked(self):
         self.settings.save()
