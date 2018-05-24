@@ -1,11 +1,14 @@
+# coding: utf-8
+
 """    Creational Pattern: Prototype pattern"""
+
 from copy import copy, deepcopy
-from includes import *
-from parameters import Settings
-from quaternion import *
-from singleton import *
-import geosolver
-from geosolver import GeometricCluster
+from solvergui.includes import *
+from solvergui.parameters import Settings
+from solvergui.quaternion import *
+from solvergui.singleton import *
+# import geosolver
+from geosolver.geometric import GeometricCluster, GeometricProblem, FixConstraint, AngleConstraint, DistanceConstraint
 # import delaunay._qhull as qhull
 import delaunay.core as dcore
 from geosolver.matfunc import Vec
@@ -34,22 +37,23 @@ class PrototypeManager(Singleton):
     e.g. when a new object is added (deleted) it will also be added (deleted) 
     to (from) the constraint graph. Updates for visualisation or constraint
     solving is handled too."""
-    def __init__( self ):
+    def __init__(self):
         """ The initilization of the class is done once, else the one and
         only instance is returned. """
-        Singleton.__init__( self )
+        Singleton.__init__(self)
         if self._isNew:
+            print("self._isNew")
             self.prtObjects = []
             self.clsObjects = []
             self.importedObjs = []
             self.copyOfObjects = []
             self.transpPrtObjects = []
-            self.axis = Axis( [0.0, 0.0, 0.0], 1.0, 40.0)
+            self.axis = Axis([0.0, 0.0, 0.0], 1.0, 40.0)
             self.objectSelected = None
             self.objectIsSelected = False
             self.showAxis = False
             self.objectNr = 1
-            self.geoProblem = geosolver.GeometricProblem(dimension=3)
+            self.geoProblem = GeometricProblem(dimension=3)
             self.selectCounter = 0
             self.panel = None
             self.result = None
@@ -120,36 +124,54 @@ class PrototypeManager(Singleton):
         """
         if not prtobject.ghost:
             if prtobject.objType == ObjectType.POINT:
-                self.geoProblem.add_point( prtobject.key, Vec( [prtobject.position[0], prtobject.position[1], prtobject.position[2]] ) )
+                self.geoProblem.add_point( prtobject.key, Vec([prtobject.position[0],
+                                                               prtobject.position[1],
+                                                               prtobject.position[2]]))
             elif prtobject.objType == ObjectType.FIXED_POINT:
-                self.geoProblem.add_point( prtobject.key, Vec( [prtobject.position[0], prtobject.position[1], prtobject.position[2]] ) )
-                self.geoProblem.add_constraint(geosolver.FixConstraint( prtobject.key, Vec ( [prtobject.position[0], prtobject.position[1], prtobject.position[2]] ) ) )
+                self.geoProblem.add_point( prtobject.key, Vec([prtobject.position[0],
+                                                               prtobject.position[1],
+                                                               prtobject.position[2]]))
+                self.geoProblem.add_constraint(FixConstraint(prtobject.key,
+                                                             Vec([prtobject.position[0],
+                                                                  prtobject.position[1],
+                                                                  prtobject.position[2]])))
             elif prtobject.objType == ObjectType.DISTANCE_CONSTRAINT:
-                prtobject.con = geosolver.DistanceConstraint( prtobject.pointBegin.key, prtobject.pointEnd.key, prtobject.distance )
-                self.geoProblem.add_constraint( prtobject.con )
+                prtobject.con = DistanceConstraint(prtobject.pointBegin.key,
+                                                   prtobject.pointEnd.key,
+                                                   prtobject.distance )
+                self.geoProblem.add_constraint(prtobject.con)
             elif prtobject.objType == ObjectType.ANGLE_CONSTRAINT:
-                prtobject.con = geosolver.AngleConstraint( prtobject.pointBegin.key, prtobject.pointMiddle.key, prtobject.pointEnd.key, prtobject.angle )
-                self.geoProblem.add_constraint( prtobject.con )
-            """ if the addition of the new object succeeds add it to the list in the panel """
-            self.panel.addItemToSelectionList( prtobject.name, prtobject.objType )
+                prtobject.con = AngleConstraint(prtobject.pointBegin.key,
+                                                prtobject.pointMiddle.key,
+                                                prtobject.pointEnd.key,
+                                                prtobject.angle )
+                self.geoProblem.add_constraint(prtobject.con)
+            # if the addition of the new object succeeds
+            # add it to the list in the panel
+
+            print(id(self.panel))
+            print(self.panel is None)
+
+            self.panel.addItemToSelectionList(prtobject.name, prtobject.objType)
+        print(type(prtobject))
         self.prtObjects += [prtobject]
 
         self.objectNr += 1
 
     def addClusterObject(self, clsObject):
-        if clsObject != None:
+        if clsObject is not None:
             self.clsObjects += [clsObject]
 
-    def addTransparentObject( self, prtobject ):
+    def addTransparentObject(self, prtobject):
         self.transpPrtObjects += [prtobject]
         self.objectNr += 1
 
     def __handleResult(self):
         """ Create the clusterobjects for the sketcher """
-        if self.result != None:
+        if self.result is not None:
             collPoints = []
             clusters = []
-            #self.result.flag = GeometricCluster.S_OVER
+            # self.result.flag = GeometricCluster.S_OVER
             if self.result.flag == GeometricCluster.I_UNDER or self.result.flag == GeometricCluster.S_UNDER:
                 clusters = self.result.subs
                 for cluster in clusters:
@@ -169,42 +191,42 @@ class PrototypeManager(Singleton):
     def __createCluster(self, cluster):
         collPoints = []
         if len(cluster.variables) > 2:
-            ptObjects = filter(lambda x: x.key in cluster.variables, self.prtObjects)
+            ptObjects = list(filter(lambda x: x.key in cluster.variables, self.prtObjects))
             prtCluster = ClusterI(cluster.flag)
             prtCluster.clusterPoints = ptObjects
             prtCluster.update()
             self.clsObjects += [prtCluster]
         elif len(cluster.variables) == 2:
-            collPoints = filter(lambda x: x.key in cluster.variables, self.prtObjects)
+            collPoints = list(filter(lambda x: x.key in cluster.variables, self.prtObjects))
             if len(collPoints) == 2:
                 prtCluster = DistanceCluster(collPoints[0], collPoints[1])
                 prtCluster.update()
                 self.clsObjects += [prtCluster]
         elif len(cluster.variables) == 1:
-            collPoints = filter(lambda x: x.key in cluster.variables, self.prtObjects)
+            collPoints = list(filter(lambda x: x.key in cluster.variables, self.prtObjects))
             prtCluster = PointCluster(collPoints[0].position, collPoints[0].radius*1.5, collPoints[0])
             self.clsObjects += [prtCluster]
 
-    def createCluster(self, variables, constrainedness = None):
+    def createCluster(self, variables, constrainedness=None):
         """ Clusters are created from a list of variables """
         prtCluster = None
         if len(variables) == 1:
-            point = filter(lambda x: x.key in variables, self.prtObjects)
+            point = list(filter(lambda x: x.key in variables, self.prtObjects))
             if point != []:
                 prtCluster = PointCluster(point[0].position, point[0].radius*1.5, point[0])
         elif len(variables) == 2:
-            collPoints = filter(lambda x: x.key in variables, self.prtObjects)
+            collPoints = list(filter(lambda x: x.key in variables, self.prtObjects))
             if collPoints != []:
                 prtCluster = DistanceCluster(collPoints[0], collPoints[1])
         elif len(variables) > 2:
             prtCluster = ClusterI(constrainedness)
-            ptObjects = filter(lambda x: x.key in variables, self.prtObjects)
+            ptObjects = list(filter(lambda x: x.key in variables, self.prtObjects))
             if ptObjects != []:
                 prtCluster.clusterPoints = ptObjects
             else:
                 prtCluster = None
 
-        if prtCluster != None:
+        if prtCluster is not None:
             prtCluster.update()
             self.clsObjects += [prtCluster]
         return prtCluster
@@ -256,7 +278,7 @@ class PrototypeManager(Singleton):
         """ Filter all the distance constraints and distance helpers where the from and with objects
         are represented in. The objects are first filtered, to minimize the comparison between the
         constraints. """
-        dConstraints = filter(lambda x:(x.objType == ObjectType.DISTANCE_CONSTRAINT or x.objType == ObjectType.DISTANCE_HELPER) and (x.pointBegin == prtObj or x.pointEnd == prtObj or x.pointBegin == withPrtObj or x.pointEnd == withPrtObj), self.prtObjects)
+        dConstraints = filter(lambda x: (x.objType == ObjectType.DISTANCE_CONSTRAINT or x.objType == ObjectType.DISTANCE_HELPER) and (x.pointBegin == prtObj or x.pointEnd == prtObj or x.pointBegin == withPrtObj or x.pointEnd == withPrtObj), self.prtObjects)
 
         """ Now the constraints are filtered they need to be checked whether they have points in common. When this is 
         the case and both of the constraints consist out of one of the parameters, then they should be
@@ -365,21 +387,21 @@ class PrototypeManager(Singleton):
         for obj in objects:
             if obj.objType == ObjectType.DISTANCE_CONSTRAINT and not obj.ghost:
                 # print " distance constr keys: ", obj.pointBegin.key, obj.pointEnd.key
-                obj.con = self.geoProblem.get_distance( obj.pointBegin.key,
-                                                        obj.pointEnd.key)
+                obj.con = self.geoProblem.get_distance(obj.pointBegin.key,
+                                                       obj.pointEnd.key)
                 # print " got it "
                 self.geoProblem.rem_constraint( obj.con )
         # print "removal of Distance Constraints succeeded """
         for obj in objects:
             if obj.objType == ObjectType.POINT and not obj.ghost:
-                self.geoProblem.rem_point( obj.key )
+                self.geoProblem.rem_point(obj.key)
 
         for obj in objects:
             if obj.objType == ObjectType.FIXED_POINT and not obj.ghost:
                 self.geoProblem.rem_constraint( self.geoProblem.get_fix( obj.key ) )
         # print "removal of Fixed points succeeded """
         self.panel.removeItems(map(lambda x: x.name, objects))
-        self.prtObjects = filter(lambda x: x not in objects, self.prtObjects)
+        self.prtObjects = list(filter(lambda x: x not in objects, self.prtObjects))
         # print "removal of All other succeeded """
 
     def removeClusterObjects(self, clsObjects, removeOnlyTemp=False, removeFixed=False):
@@ -482,9 +504,9 @@ class PrototypeManager(Singleton):
                     if dConstraint is not None:
                         self.geoProblem.rem_constraint(dConstraint)
                         if prtObj.pointBegin.key == oldKey:
-                            prtObj.con = geosolver.DistanceConstraint(newKey, prtObj.pointEnd.key, prtObj.distance )
+                            prtObj.con = DistanceConstraint(newKey, prtObj.pointEnd.key, prtObj.distance )
                         elif prtObj.pointEnd.key == oldKey:
-                            prtObj.con = geosolver.DistanceConstraint(prtObj.pointBegin.key, newKey, prtObj.distance )
+                            prtObj.con = DistanceConstraint(prtObj.pointBegin.key, newKey, prtObj.distance )
                         self.geoProblem.add_constraint(prtObj.con)
 
             elif prtObj.objType == ObjectType.ANGLE_CONSTRAINT:
@@ -493,11 +515,11 @@ class PrototypeManager(Singleton):
                     self.geoProblem.rem_constraint(aConstraint)
                     if aConstraint is not None:
                         if prtObj.pointBegin.key == oldKey:
-                            prtObj.con = geosolver.AngleConstraint(newKey, prtObj.pointMiddle.key, prtObj.pointEnd.key, prtObj.angle )
+                            prtObj.con = AngleConstraint(newKey, prtObj.pointMiddle.key, prtObj.pointEnd.key, prtObj.angle )
                         elif prtObj.pointMiddle.key == oldKey:
-                            prtObj.con = geosolver.AngleConstraint(prtObj.pointBegin.key, newKey, prtObj.pointEnd.key, prtObj.angle )
+                            prtObj.con = AngleConstraint(prtObj.pointBegin.key, newKey, prtObj.pointEnd.key, prtObj.angle )
                         elif prtObj.pointEnd.key == oldKey:
-                            prtObj.con = geosolver.AngleConstraint(prtObj.pointBegin.key, prtObj.pointMiddle.key, newKey, prtObj.angle )
+                            prtObj.con = AngleConstraint(prtObj.pointBegin.key, prtObj.pointMiddle.key, newKey, prtObj.angle )
                         self.geoProblem.add_constraint(prtObj.con)
 
     def getImportedObjsByKey(self, key):
@@ -512,7 +534,7 @@ class PrototypeManager(Singleton):
             obj - object for which the constraint must be added.
         """
         if obj.objType == ObjectType.POINT:
-            self.geoProblem.add_constraint(geosolver.FixConstraint(obj.key, Vec( [obj.position[0], obj.position[1], obj.position[2]])))
+            self.geoProblem.add_constraint(FixConstraint(obj.key, Vec( [obj.position[0], obj.position[1], obj.position[2]])))
             newObj = FixedPoint(obj.key, obj.position, obj.radius)
             self.replaceObject(obj, newObj)
 
@@ -722,17 +744,18 @@ class PrototypeManager(Singleton):
         self.deselectObject()
         self.objectSelected = obj
         self.objectSelected.selected = True
-        self.panel.selectItemByName( obj.name )
+        self.panel.selectItemByName(obj.name)
 
     def selectObjectsByKeys(self, variables):
-        """ Select multiple objects by their keys. These are unique and are the same as the keys in the solver. 
+        """ Select multiple objects by their keys. These are unique and are the
+        same as the keys in the solver. 
         
         Parameters:
             variables - keys which needs to be selected
         """
-        #self.deselectAllObjects()
+        # self.deselectAllObjects()
         for prtobject in self.prtObjects:
-            keyfound = filter( lambda x:x == prtobject.key, variables )
+            keyfound = filter(lambda x: x == prtobject.key, variables)
             if keyfound:
                  prtobject.selected = True
 
@@ -786,7 +809,7 @@ class PrototypeManager(Singleton):
                 elif prtObject.isMovable:
                     prtObject.selected = False
                 self.panel.updateSelection = False
-                self.panel.selectItemByName( prtObject.name )
+                self.panel.selectItemByName(prtObject.name)
                 self.panel.updateSelection = True
 
         if not found:
@@ -837,6 +860,10 @@ class PrototypeManager(Singleton):
             panel - panel from the main window.
         
         """
+        print("*"*40)
+        print("setPanel() called !!")
+        print(id(self.panel))
+        print("*" * 40)
         self.panel = panel
 
     def isNameUnique( self, oldName, newName):
@@ -939,7 +966,7 @@ class PrototypeManager(Singleton):
                 else:
                     raise Exception("Unable to load unkown object", element.tagName())
 
-                if prtObject != None:
+                if prtObject is not None:
                     prtObject.load(element)
                     self.addObject(prtObject)
 
@@ -1034,7 +1061,7 @@ class Object:
     """ The general prototype object class. All objects which must be
     visualised, or have a connection with the constraint
     solver must be subclassed from the Object class. """
-    def __init__( self ):
+    def __init__(self):
         self.settings = Settings()
         self.selectionId = 0
         self.selectColor = self.settings.sketcherData.selectColor
@@ -1060,7 +1087,8 @@ class Object:
         raise NotImplementedError( caller + ' must be implemented in subclass' )
 
     def setNewReference( self, oldObj, newObj ):
-        """ A virtual set new reference function, to dereference an old object and reference to the new one. 
+        """ A virtual set new reference function, to dereference an old object
+        and reference to the new one. 
         
         Parameters:
             oldObj - old object which must be dereferenced
@@ -1069,7 +1097,8 @@ class Object:
         raise NotImplementedError( caller + ' must be implemented in subclass' )
 
     def load(self, domElement):
-        """ A virtual load function to load the object from a XML file and set the initial values. 
+        """ A virtual load function to load the object from a XML file and set
+        the initial values. 
         
         Parameters:
             domElement - an element which contains information about an object.
@@ -1094,9 +1123,10 @@ class Object:
         """
         raise NotImplementedError( caller + ' must be implemented in subclass' )
 
-class Point( Object ):
-    def __init__( self, name, position, radius ):
-        Object.__init__( self )
+
+class Point(Object):
+    def __init__(self, name, position, radius):
+        Object.__init__(self)
         self.name = name
         self.key = name
         self.importKey = name
@@ -1109,18 +1139,22 @@ class Point( Object ):
         self.ghost = False
         self.needUpdate = True
 
-    def draw( self ):
+    def draw(self):
         if self.selected:
-            glColor3fv( [self.selectColor.redF(),self.selectColor.greenF(), self.selectColor.blueF()])
+            glColor3fv([self.selectColor.redF(),
+                        self.selectColor.greenF(),
+                        self.selectColor.blueF()])
         else:
-            glColor3fv( [self.color.redF(),self.color.greenF(), self.color.blueF()])
+            glColor3fv([self.color.redF(),
+                        self.color.greenF(),
+                        self.color.blueF()])
         glPushMatrix()
 
-        glTranslatef( self.position[0], self.position[1], self.position[2] )
-        gluSphere( self.quadric, self.radius, 10, 10 )
+        glTranslatef(self.position[0], self.position[1], self.position[2])
+        gluSphere(self.quadric, self.radius, 10, 10)
         glPopMatrix()
 
-    def updatePosition( self, translation ):
+    def updatePosition(self, translation):
         self.position[0] += translation[0]
         self.position[1] += translation[1]
         self.position[2] += translation[2]
@@ -1130,26 +1164,29 @@ class Point( Object ):
         self.position[1] = position[1]
         self.position[2] = position[2]
 
-    def update( self ):
+    def update(self):
         pass
 
-    def setNewReference( self, oldObj, newObj ):
+    def setNewReference(self, oldObj, newObj):
         pass
 
-    def clone( self, **attr ):
-        obj = deepcopy( self )
-        obj.__dict__.update( attr )
+    def clone(self, **attr):
+        obj = deepcopy(self)
+        obj.__dict__.update(attr)
         return obj
 
-    def setTexture( self, texture ):
+    def setTexture(self, texture):
         pass
 
-    def load (self, domElement):
+    def load(self, domElement):
         self.key = str(domElement.attribute("key", ""))
         self.name = str(domElement.attribute("name", ""))
-        self.position[0] = domElement.attribute("posX", "").toFloat()[0]
-        self.position[1] = domElement.attribute("posY", "").toFloat()[0]
-        self.position[2] = domElement.attribute("posZ", "").toFloat()[0]
+        # self.position[0] = domElement.attribute("posX", "").toFloat()[0]
+        self.position[0] = float(domElement.attribute("posX", ""))
+        # self.position[1] = domElement.attribute("posY", "").toFloat()[0]
+        # self.position[2] = domElement.attribute("posZ", "").toFloat()[0]
+        self.position[1] = float(domElement.attribute("posY", ""))
+        self.position[2] = float(domElement.attribute("posZ", ""))
 
     def importItem(self, domElement, nrOfImports=0, objNr=0):
         self.key = "p" + str(objNr)
@@ -1170,18 +1207,23 @@ class Point( Object ):
 
         return pointNode
 
-class FixedPoint( Point ):
-    def __init__( self, name, position, radius ):
-        Point.__init__( self, name, position, radius )
+
+class FixedPoint(Point):
+    def __init__( self, name, position, radius):
+        Point.__init__(self, name, position, radius)
         self.objType = ObjectType.FIXED_POINT
         self.radius = self.settings.sketcherData.fPointRadius
         self.color = self.settings.sketcherData.fPointColor
 
-    def draw( self ):
+    def draw(self):
         if self.selected:
-            glColor3fv( [self.selectColor.redF(),self.selectColor.greenF(), self.selectColor.blueF()])
+            glColor3fv([self.selectColor.redF(),
+                        self.selectColor.greenF(),
+                        self.selectColor.blueF()])
         else:
-            glColor3fv( [self.color.redF(),self.color.greenF(), self.color.blueF()])
+            glColor3fv( [self.color.redF(),
+                         self.color.greenF(),
+                         self.color.blueF()])
         glPushMatrix()
 
         glTranslatef( self.position[0], self.position[1], self.position[2] )
@@ -1205,7 +1247,8 @@ class FixedPoint( Point ):
 
         return pointNode
 
-class AngleConstraint( Object ):
+
+class AngleConstraint(Object):
     def __init__( self, name, pBegin, pMiddle, pEnd ):
         Object.__init__( self )
         self.pointBegin = pBegin
@@ -1325,9 +1368,7 @@ class AngleConstraint( Object ):
 
         glPopMatrix()
 
-
-
-    def drawAxis( self ):
+    def drawAxis(self):
         pass
 
     def update( self ):
@@ -1360,11 +1401,11 @@ class AngleConstraint( Object ):
         vMiddleMiddle.normalize()
         if diffToBegin.norm() > 1e10:
             diffToBegin.normalize()
-        #else:
+        # else:
         #    diffToBegin = Vec([1.0,0,0])
         if diffToEnd.norm() > 1e10:
             diffToEnd.normalize()
-        #else:
+        # else:
         #    diffToEnd = Vec([0,1,0])
 
         """ Retrieve the up-vector, and rotate based upon this vector and the starting direction """
@@ -1449,20 +1490,21 @@ class AngleConstraint( Object ):
 
     def save( self, domDocument ):
         """ Save the angle constraint to the xml-file """
-        angleNode = QtXml.QDomElement( domDocument.createElement( "AngleConstraint" ) )
-        angleNode.setAttribute( "pBeginKey", self.pointBegin.key )
-        angleNode.setAttribute( "pMiddleKey", self.pointMiddle.key )
-        angleNode.setAttribute( "pEndKey", self.pointEnd.key )
-        angleNode.setAttribute( "key", self.key )
-        angleNode.setAttribute( "name", self.name )
-        angleNode.setAttribute( "angle", str(self.angle) )
-        angleNode.setAttribute( "fixed", str(self.fixed) )
+        angleNode = QtXml.QDomElement(domDocument.createElement("AngleConstraint"))
+        angleNode.setAttribute("pBeginKey", self.pointBegin.key)
+        angleNode.setAttribute("pMiddleKey", self.pointMiddle.key)
+        angleNode.setAttribute("pEndKey", self.pointEnd.key)
+        angleNode.setAttribute("key", self.key)
+        angleNode.setAttribute("name", self.name)
+        angleNode.setAttribute("angle", str(self.angle))
+        angleNode.setAttribute("fixed", str(self.fixed))
 
         return angleNode
 
-class Distance( Object ):
-    def __init__( self, name, pBegin, pEnd ):
-        Object.__init__( self )
+
+class Distance(Object):
+    def __init__(self, name, pBegin, pEnd):
+        Object.__init__(self)
         self.pointBegin = pBegin
         self.pointEnd = pEnd
         self.radius = self.settings.sketcherData.lineRadius
@@ -1476,44 +1518,52 @@ class Distance( Object ):
         self.showAxis = False
         self.objType = ObjectType.DISTANCE_HELPER
         self.color = self.settings.sketcherData.lineColor
-        if self.pointBegin != None and self.pointEnd != None:
-            self.distance = (self.pointBegin.position - self.pointEnd.position ).norm()
+        if self.pointBegin is not None and self.pointEnd is not None:
+            self.distance = (self.pointBegin.position - self.pointEnd.position).norm()
         else:
             self.distance = 0.0
 
-    def update( self ):
+    def update(self):
         self.height = (self.pointBegin.position - self.pointEnd.position ).norm()
         if self.height == 0.0:
             self.height = 0.001
 
         diff = self.pointEnd.position - self.pointBegin.position
-        self.orientation.fromDirection( Vec( [0.0, 0.0, self.height] ), diff )
-        #print "cylinder orientation:",self.orientation
-        #print "axis:",self.orientation.axis(), "angle:", self.orientation.angle()
+        self.orientation.fromDirection( Vec( [0.0, 0.0, self.height]), diff)
+        # print "cylinder orientation:",self.orientation
+        # print "axis:",self.orientation.axis(), "angle:", self.orientation.angle()
         self.orientation.getRotationMatrix( self.rotMatrix )
         self.rotMatrix[3][0] = self.pointBegin.position[0]
         self.rotMatrix[3][1] = self.pointBegin.position[1]
         self.rotMatrix[3][2] = self.pointBegin.position[2]
         self.rotMatrix[3][3] = 1.0
-        #print "cylinder rotMatix:",self.rotMatrix
+        # print "cylinder rotMatix:",self.rotMatrix
 
-    def draw( self ):
+    def draw(self):
         glPushMatrix()
         if self.selected:
-            glColor3fv( [self.selectColor.redF(),self.selectColor.greenF(), self.selectColor.blueF()])
+            glColor3fv([self.selectColor.redF(),
+                        self.selectColor.greenF(),
+                        self.selectColor.blueF()])
         else:
-            glColor3fv( [self.color.redF(),self.color.greenF(), self.color.blueF()])
+            glColor3fv([self.color.redF(),
+                        self.color.greenF(),
+                        self.color.blueF()])
 
         if self.height == 0.0:
             self.height = 0.001
 
         if self.radius == 0:
             glBegin(GL_LINES)
-            glVertex3f(self.pointBegin.position[0], self.pointBegin.position[1], self.pointBegin.position[2])
-            glVertex3f(self.pointEnd.position[0], self.pointEnd.position[1], self.pointEnd.position[2])
+            glVertex3f(self.pointBegin.position[0],
+                       self.pointBegin.position[1],
+                       self.pointBegin.position[2])
+            glVertex3f(self.pointEnd.position[0],
+                       self.pointEnd.position[1],
+                       self.pointEnd.position[2])
             glEnd()
         else:
-            #glMultMatrixd( self.rotMatrix )
+            # glMultMatrixd( self.rotMatrix )
             # there is either a bug in glMultMatrixd or in Quaternion.getRotationMatrix
             # or maybe it has to do with Numpy -> Numeric transition?
             # now doing it with glTranslate/Rotate
@@ -1546,7 +1596,8 @@ class Distance( Object ):
         pEndKey = str(domElement.attribute("pEndKey", ""))
         self.pointBegin = PrototypeManager().getObjectByKey(pBeginKey)
         self.pointEnd = PrototypeManager().getObjectByKey(pEndKey)
-        self.distance = domElement.attribute("distance", "").toDouble()[0]
+        # self.distance = domElement.attribute("distance", "").toDouble()[0]
+        self.distance = float(domElement.attribute("distance", ""))
 
     def importItem(self, domElement, nrOfImports=0, objNr=0):
         self.key = "l" + str(objNr)
@@ -1560,15 +1611,16 @@ class Distance( Object ):
         self.pointEnd = PrototypeManager().getImportedObjsByKey(pEndKey)
         self.distance = domElement.attribute("distance", "").toDouble()[0]
 
-    def save( self, domDocument ):
-        distanceNode = QtXml.QDomElement( domDocument.createElement( "Distance" ) )
-        distanceNode.setAttribute( "pBeginKey", self.pointBegin.key )
-        distanceNode.setAttribute( "pEndKey", self.pointEnd.key )
-        distanceNode.setAttribute( "key", self.key )
-        distanceNode.setAttribute( "name", self.name )
-        distanceNode.setAttribute( "distance", str(self.distance) )
+    def save( self, domDocument):
+        distanceNode = QtXml.QDomElement(domDocument.createElement("Distance"))
+        distanceNode.setAttribute("pBeginKey", self.pointBegin.key)
+        distanceNode.setAttribute("pEndKey", self.pointEnd.key)
+        distanceNode.setAttribute("key", self.key)
+        distanceNode.setAttribute("name", self.name)
+        distanceNode.setAttribute("distance", str(self.distance))
 
         return distanceNode
+
 
 class DistanceConstraint( Distance ):
     def __init__( self, name, pBegin, pEnd ):

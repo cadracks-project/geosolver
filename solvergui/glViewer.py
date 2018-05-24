@@ -473,8 +473,6 @@ class SolutionGLViewport(GLViewport):
         self.createTriggers()
 
     def createTriggers(self):
-        pass
-        # TODO : adapt to PyQt5
         # # QtCore.QObject.connect(self.timer, QtCore.SIGNAL("timeout()"), self.update)
         # QtCore.QObject.connect(self.settings.svData,
         #                        QtCore.SIGNAL("showGridChanged"),

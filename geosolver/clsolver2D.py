@@ -5,17 +5,17 @@ for problems formulated by Clusters. The generic solution
 is a directed acyclic graph of Clusters and Methods. Particilar problems
 and solutions are represented by a Configuration for each cluster.
 """
-import sys
+# import sys
 
-if sys.version_info[0] > 2:
-    py2 = False
-else:
-    py2 = True
-
-if py2 is True:
-    from sets import Set, ImmutableSet
-else:
-    pass
+# if sys.version_info[0] > 2:
+#     py2 = False
+# else:
+#     py2 = True
+#
+# if py2 is True:
+#     from sets import Set, ImmutableSet
+# else:
+#     pass
 
 from geosolver.clsolver import *
 from geosolver.multimethod import MultiMethod

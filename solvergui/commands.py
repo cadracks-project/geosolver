@@ -196,7 +196,8 @@ class ImportCommand(Command):
         if not file.open(QtCore.QIODevice.ReadOnly):
             raise StandardError("File could not be opened")
 
-        """ Skip the first line, because we need the root of the objects not the document. """
+        # Skip the first line, because we need the root of the objects
+        # not the document.
         file.readLine()
 
         if not doc.setContent(file, False):
@@ -225,4 +226,4 @@ class ClearSceneCommand(Command):
         self.prototypeManager.removeAllObjects()
         self.mainWindow.viewportManager.resetScene()
         self.mainWindow.viewportManager.updateViewports()
-        self.mainWindow.saveFileName = QtCore.QString("")
+        self.mainWindow.saveFileName = ""

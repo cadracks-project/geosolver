@@ -1,3 +1,5 @@
+# coding: utf-8
+
 """A generic geometric constraint solver. 
 
 This module provides basic functionality for 
@@ -5,21 +7,12 @@ ClusterSolver2D and ClusterSolver3D.
 
 The solver finds a generic solution
 for problems formulated by Clusters. The generic solution 
-is a directed acyclic graph of Clusters and Methods. Particilar problems
+is a directed acyclic graph of Clusters and Methods. Particular problems
 and solutions are represented by a Configuration for each cluster.
+
 """
 
-import sys
-
-if sys.version_info[0] > 2:
-    py2 = False
-else:
-    py2 = True
-
-if py2 is True:
-    from sets import Set, ImmutableSet
-else:
-    pass
+# import sys
 
 from geosolver.graph import Graph
 from geosolver.method import Method, MethodGraph
@@ -29,12 +22,22 @@ from geosolver.multimethod import MultiVariable, MultiMethod
 from geosolver.cluster import *
 from geosolver.configuration import Configuration
 
+# if sys.version_info[0] > 2:
+#     py2 = False
+# else:
+#     py2 = True
+#
+# if py2 is True:
+#     from sets import Set, ImmutableSet
+# else:
+#     pass
+
 
 # Basic methods
 
 class ClusterMethod(MultiMethod):
-    """A derive is a method such that a single ouput cluster is a 
-    subconsraint of a single input cluster."""
+    """A derive is a method such that a single output cluster is a 
+    subconstraint of a single input cluster."""
 
     def __init__(self):
         self.consistent = None
@@ -46,20 +49,20 @@ class ClusterMethod(MultiMethod):
 
     def status_str(self):
         s = ""
-        if self.consistent == True:
+        if self.consistent is True:
             s += "consistent "
-        elif self.consistent == False:
+        elif self.consistent is False:
             s += "inconsistent "
-        if self.overconstrained == True:
+        if self.overconstrained is True:
             s += "overconstrained"
-        elif self.overconstrained == False:
+        elif self.overconstrained is False:
             s += "wellconstrained"
         return s
 
 
 class PrototypeMethod(MultiMethod):
     """A PrototypeMethod selects those solutions of a cluster for which
-       the protoype and the solution satisfy the same constraints.
+       the prototype and the solution satisfy the same constraints.
     """
 
     def __init__(self, incluster, selclusters, outcluster, constraints):
@@ -122,7 +125,7 @@ def is_information_increasing(method):
 # ---------- main class --------------
 
 class ClusterSolver(Notifier):
-    """Constraints are Clusers: Rigids, Hedgehogs and Balloons. 
+    """Constraints are Clusters: Rigids, Hedgehogs and Balloons. 
        After adding each cluster, the solver tries to merge
        clusters, adding new clusters and methods between clusters. 
     """
@@ -180,8 +183,8 @@ class ClusterSolver(Notifier):
         """get top-level objects"""
         return self._graph.outgoing_vertices("_toplevel")
 
-    def is_top_level(self, object):
-        return self._graph.has_edge("_toplevel", object)
+    def is_top_level(self, object_):
+        return self._graph.has_edge("_toplevel", object_)
 
     def add(self, cluster):
         """Add a cluster. 
@@ -195,7 +198,7 @@ class ClusterSolver(Notifier):
 
     def remove(self, cluster):
         """Remove a cluster. 
-           All dependend objects are also removed.
+           All dependent objects are also removed.
         """
         self._remove(cluster)
         self._process_new()
@@ -217,15 +220,16 @@ class ClusterSolver(Notifier):
         self._graph.rem_vertex("_root")
         self._graph.add_edge("_root", rigid)
 
-    def find_dependend(self, object):
-        """Return a list of objects that depend on given object directly."""
-        l = self._graph.outgoing_vertices(object)
-        return filter(lambda x: self._graph.get(object, x) == "dependency", l)
+    def find_dependend(self, object_):
+        """Return a list of objects that depend on given object_ directly."""
+        l = self._graph.outgoing_vertices(object_)
+        return filter(lambda x: self._graph.get(object_, x) == "dependency", l)
 
-    def find_depends(self, object):
-        """Return a list of objects that the given object depends on directly"""
-        l = self._graph.ingoing_vertices(object)
-        return filter(lambda x: self._graph.get(x, object) == "dependency", l)
+    def find_depends(self, object_):
+        """Return a list of objects that the given object_
+        depends on directly"""
+        l = self._graph.ingoing_vertices(object_)
+        return filter(lambda x: self._graph.get(x, object_) == "dependency", l)
 
     def contains(self, obj):
         return self._graph.has_vertex(obj)
@@ -256,22 +260,23 @@ class ClusterSolver(Notifier):
         l = self._graph.ingoing_vertices(needer)
         return filter(lambda x: self._graph.get(x, needer) == "needed_by", l)
 
-    def _add_top_level(self, object):
-        self._graph.add_edge("_toplevel", object)
-        self._new.append(object)
+    def _add_top_level(self, object_):
+        self._graph.add_edge("_toplevel", object_)
+        self._new.append(object_)
 
-    def _rem_top_level(self, object):
-        self._graph.rem_edge("_toplevel", object)
-        if object in self._new:
-            self._new.remove(object)
+    def _rem_top_level(self, object_):
+        self._graph.rem_edge("_toplevel", object_)
+        if object_ in self._new:
+            self._new.remove(object_)
 
-    def _remove(self, object):
+    def _remove(self, object_):
         # find all indirectly dependend objects
-        todelete = [object] + self._find_descendend(object)
+        todelete = [object_] + self._find_descendend(object_)
         torestore = Set()
         # remove all objects
         for item in todelete:
-            # if merge removed items from toplevel then add them back to top level
+            # if merge removed items from toplevel
+            # then add them back to top level
             if hasattr(item, "restore_toplevel"):
                 for cluster in item.restore_toplevel:
                     torestore.add(cluster)
@@ -305,7 +310,7 @@ class ClusterSolver(Notifier):
         self._process_new()
 
     def _find_descendend(self, v):
-        """find all descendend objects of v (dirdctly or indirectly dependend"""
+        """find all descendend objects of v (directly or indirectly dependend"""
         front = [v]
         result = {}
         while len(front) > 0:
@@ -336,14 +341,14 @@ class ClusterSolver(Notifier):
         elif isinstance(cluster, Balloon):
             self._add_balloon(cluster)
         else:
-            raise StandardError("unsupported type : %s" % type(cluster))
+            raise Exception("unsupported type : %s" % type(cluster))
 
     def _add_rigid(self, newcluster):
         """add a rigid cluster if not already in system"""
         diag_print("_add_rigid " + str(newcluster), "clsolver")
         # check if not already exists
         if self._graph.has_vertex(newcluster):
-            raise StandardError("rigid already in clsolver")
+            raise Exception("rigid already in clsolver")
         # update graph
         self._add_to_group("_rigids", newcluster)
         for var in newcluster.vars:
@@ -438,21 +443,23 @@ class ClusterSolver(Notifier):
         constraints = merge.prototype_constraints()
         if len(constraints) == 0:
             return
-        vars = Set()
+        vars_ = set()
         for con in constraints:
-            vars.union_update(con.variables())
+            vars_.update(con.variables())
         selclusters = []
-        for var in vars:
+        for var in vars_:
             clusters = self._graph.outgoing_vertices(var)
             clusters = filter(lambda c: isinstance(c, Rigid), clusters)
-            clusters = filter(lambda c: len(c.vars) == 1, clusters)
+            clusters = list(filter(lambda c: len(c.vars) == 1, clusters))
             if len(clusters) != 1:
-                raise Exception("no prototype cluster for variable " + str(v))
+                raise Exception("no prototype cluster for variable " + str(var))
             selclusters.append(clusters[0])
         outcluster = incluster.copy()
         # Rick 20090519 - copy does not copy structural overconstrained flag?
         outcluster.overconstrained = incluster.overconstrained
-        selector = PrototypeMethod(incluster, selclusters, outcluster,
+        selector = PrototypeMethod(incluster,
+                                   selclusters,
+                                   outcluster,
                                    constraints)
         self._add_cluster(outcluster)
         self._add_method(selector)
@@ -507,17 +514,17 @@ class ClusterSolver(Notifier):
             cluster = self._graph.outgoing_vertices("_root")[0]
         else:
             cluster = None
-        while (cluster != None):
+        while cluster is not None:
             if cluster is input_cluster:
                 return True
             fr = self._graph.outgoing_vertices(cluster)
             me = filter(lambda x: isinstance(x, Merge), fr)
             me = filter(lambda x: cluster in x.outputs(), me)
-            if len(me) > 1:
+            if len(list(me)) > 1:
                 raise Exception("root cluster merged more than once")
-            elif len(me) == 0:
+            elif len(list(me)) == 0:
                 cluster = None
-            elif len(me[0].outputs()) != 1:
+            elif len(list(me)[0].outputs()) != 1:
                 raise Exception("a merge with number of outputs != 1")
             else:
                 cluster = me[0].outputs()[0]
@@ -577,8 +584,8 @@ class ClusterSolver(Notifier):
         else:
             method = self._determining_method(cluster)
             inputs = method.inputs()
-            down = filter(lambda x: self._contains_constraint(x, constraint),
-                          inputs)
+            down = list(filter(lambda x: self._contains_constraint(x, constraint),
+                          inputs))
             if len(down) == 0:
                 return cluster
             elif len(down) > 1:
@@ -593,7 +600,7 @@ class ClusterSolver(Notifier):
 
     def _is_atomic(self, object):
         method = self._determining_method(object)
-        if method == None:
+        if method is None:
             return True
         # elif isinstance(method, Distance2Rigid) or isinstance(method, Angle2Hog):
         #    return True
@@ -602,11 +609,11 @@ class ClusterSolver(Notifier):
 
     def _determining_method(self, object):
         depends = self.find_depends(object)
-        methods = filter(lambda x: isinstance(x, Method), depends)
+        methods = list(filter(lambda x: isinstance(x, Method), depends))
         if len(methods) == 0:
             return None
         elif len(methods) > 1:
-            raise "object determined by more than one method"
+            raise Exception("object determined by more than one method")
         else:
             return methods[0]
 

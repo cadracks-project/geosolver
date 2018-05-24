@@ -98,24 +98,23 @@ class Graph (Notifier):
             self.add_vertex(v)
         for e in graph.edges():
             (v,w) = e
-            self.set(v,w,graph.get(v,w))
-
+            self.set(v, w, graph.get(v, w))
 
     def rem_vertex(self, v):
         "Remove vertex and incident edges."
         if v in self._dict:
             # remove edges going to vertex
             for u in self.ingoing_vertices(v):
-                self.rem_edge(u,v)
+                self.rem_edge(u, v)
             # remove edges going from vertex
             for w in self.outgoing_vertices(v):
-                self.rem_edge(v,w)
+                self.rem_edge(v, w)
             # remove vertex (and edges going from vertex)
             del self._dict[v]
             # and in the reverse
             del self._reverse[v]
             # notify
-            self.send_notify(("rem_vertex",v))
+            self.send_notify(("rem_vertex", v))
         else:
             raise Exception("vertex not in graph")
 
@@ -183,7 +182,6 @@ class Graph (Notifier):
             for j in self._dict[i]:
                 l.append((i, j))
         return l
-
 
     def subgraph(self, vertices):
         "Derive subgraph containing specified vertices and enclosed edges."
@@ -267,10 +265,7 @@ class Graph (Notifier):
                     consider.append(v)
                 elif len(pth)+1 < len(trails[v]):
                     trails[v] = pth + [v]
-            #endfor
-        #endwhile
         return []
-    #end def path
 
     def connected(self, v):
         """return vertices X connected to v by following edges ajdajecnt to v or X
@@ -417,8 +412,6 @@ class Graph (Notifier):
                         if graph.has_edge(pick,v):
                             sum = sum + graph.get(pick,v)
                         todo[v] = sum
-                # rof
-            # elihw
             # merge last two added vertices
             last = done[len(done)-1]
             butlast = done[len(done)-2]
@@ -436,8 +429,7 @@ class Graph (Notifier):
             graph.rem_vertex(butlast)
             # klaar
             #print "cut, cutvalue:", cut, cutvalue
-            return (cut,cutvalue)
-        # fed
+            return cut,cutvalue
 
 
     # special methods
@@ -460,10 +452,6 @@ class Graph (Notifier):
             if len(self._dict) > 0: s = s[:-1]
             s += "}"
             return s
-
-# end class Graph
-
-
 
 
 class FanGraph(Graph):
@@ -491,7 +479,6 @@ class FanGraph(Graph):
             for e in graph.edges():
                 (v,w) = e
                 self.set(v,w,graph.get(v,w))
-    #end __init__
 
     def add_vertex(self, v):
         "Add vertex to graph if not already."
@@ -527,7 +514,7 @@ class FanGraph(Graph):
         if v in self._dict:
             # remove edges going to vertex
             for u in self.ingoing_vertices(v):
-                self.rem_edge(u,v)
+                self.rem_edge(u, v)
             # remove edges going from vertex
             for w in self.outgoing_vertices(v):
                 self.rem_edge(v,w)
@@ -539,7 +526,7 @@ class FanGraph(Graph):
             # and in the reverse
             del self._reverse[v]
             # notify
-            self.send_notify(("rem_vertex",v))
+            self.send_notify(("rem_vertex", v))
         else:
             raise Exception("vertex not in graph")
 

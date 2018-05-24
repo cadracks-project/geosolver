@@ -125,7 +125,7 @@ class GeometricProblem (Notifier, Listener):
         on_a = self.cg.get_constraints_on(a)
         on_b = self.cg.get_constraints_on(b)
         on_ab = filter(lambda c: c in on_a and c in on_b, on_a)
-        distances = filter(lambda c: isinstance(c, DistanceConstraint), on_ab)
+        distances = list(filter(lambda c: isinstance(c, DistanceConstraint), on_ab))
         if len(distances) > 1:
             raise Exception("multiple constraints found")
         elif len(distances) == 1:
@@ -140,7 +140,7 @@ class GeometricProblem (Notifier, Listener):
         on_c = self.cg.get_constraints_on(c)
         on_abc = filter(lambda x: x in on_a and x in on_b and x in on_c, on_a)
         angles = filter(lambda x: isinstance(x, AngleConstraint), on_abc)
-        candidates = filter(lambda x: x.variables()[1] == b, angles)
+        candidates = list(filter(lambda x: x.variables()[1] == b, angles))
         if len(candidates) > 1:
             raise Exception("multiple constraints found")
         elif len(candidates) == 1:
@@ -152,10 +152,10 @@ class GeometricProblem (Notifier, Listener):
         """return the fix constraint on given point, or None"""
         on_p = self.cg.get_constraints_on(p)
         fixes = filter(lambda x: isinstance(x, FixConstraint), on_p)
-        if len(fixes) > 1:
+        if len(list(fixes)) > 1:
             raise Exception("multiple constraints found")
-        elif len(fixes) == 1:
-            return fixes[0]
+        elif len(list(fixes)) == 1:
+            return list(fixes)[0]
         else:
             return None
 
@@ -487,7 +487,7 @@ class GeometricSolver (Listener):
             if self.dimension == 3:
                 p0.append(0.0)
                 p1.append(0.0)
-            conf = Configuration({v0:p0,v1:p1})
+            conf = Configuration({v0: p0, v1: p1})
             self.dr.set(rig, [conf])
             assert con.satisfied(conf.map)
         elif isinstance(con, FixConstraint):

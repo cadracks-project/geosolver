@@ -1,4 +1,6 @@
-from includes import *
+# coding: utf-8
+
+from solvergui.includes import *
 
 """# no more nasty rounding with integer divisions
 from __future__ import division

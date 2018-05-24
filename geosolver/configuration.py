@@ -4,18 +4,20 @@ A configuration is a set of named points with coordinates."""
 
 import sys
 
-if sys.version_info[0] > 2:
-    py2 = False
-else:
-    py2 = True
-
-if py2 is True:
-    from sets import Set, ImmutableSet
-else:
-    pass
-from geosolver.matfunc import Vec, Mat
+# if sys.version_info[0] > 2:
+#     py2 = False
+# else:
+#     py2 = True
+#
+# if py2 is True:
+#     from sets import Set, ImmutableSet
+# else:
+#     pass
+from geosolver.matfunc import Vec, matrix_factory
 from geosolver.intersections import *
 from geosolver.tolerance import *
+
+from geosolver.vector import norm, vector, cross
 
 
 def perp2D(v):
@@ -68,7 +70,7 @@ class Configuration:
             ph = Vec(p)
             ph.append(1.0)
             ph = t.mmul(ph)
-            p = vector.vector(ph[0:-1]) / ph[-1]
+            p = vector(ph[0:-1]) / ph[-1]
             newmap[v] = p
         return Configuration(newmap)
 
@@ -107,9 +109,10 @@ class Configuration:
 
     # NON-PUBLIC
 
-    def merge_transform(self,other):
+    def merge_transform(self, other):
         if other.dimension != self.dimension:
-            raise Exception("cannot merge configurations of different dimensions")
+            raise Exception("cannot merge configurations "
+                            "of different dimensions")
         elif self.dimension == 2:
             return self._merge_transform_2D(other)
         else:
@@ -129,31 +132,31 @@ class Configuration:
         underconstrained = self.underconstrained or other.underconstrained
         if len(shared) == 0:
             underconstrained = True
-            cs1 = make_hcs_2d(vector.vector([0.0,0.0]), vector.vector([1.0,0.0]))
-            cs2 = make_hcs_2d(vector.vector([0.0,0.0]), vector.vector([1.0,0.0]))
+            cs1 = make_hcs_2d(vector([0.0,0.0]), vector([1.0,0.0]))
+            cs2 = make_hcs_2d(vector([0.0,0.0]), vector([1.0,0.0]))
         elif len(shared) == 1:
             if len(self.vars()) > 1 and len(other.vars()) > 1:
                 underconstrained = True
             v1 = list(shared)[0]
             p11 = self.map[v1]
             p21 = other.map[v1]
-            cs1 = make_hcs_2d(p11, p11+vector.vector([1.0,0.0]))
-            cs2 = make_hcs_2d(p21, p21+vector.vector([1.0,0.0]))
+            cs1 = make_hcs_2d(p11, p11+vector([1.0,0.0]))
+            cs2 = make_hcs_2d(p21, p21+vector([1.0,0.0]))
         else:   # len(shared) >= 2:
             v1 = list(shared)[0]
             v2 = list(shared)[1]
             p11 = self.map[v1]
             p12 = self.map[v2]
-            if tol_eq(vector.norm(p12-p11),0.0):
+            if tol_eq(norm(p12-p11), 0.0):
                 underconstrained = True
-                cs1 = make_hcs_2d(p11, p11+vector.vector[1.0,0.0])
+                cs1 = make_hcs_2d(p11, p11+vector[1.0, 0.0])
             else:
                 cs1 = make_hcs_2d(p11, p12)
             p21 = other.map[v1]
             p22 = other.map[v2]
-            if tol_eq(vector.norm(p22-p21),0.0):
+            if tol_eq(norm(p22-p21),0.0):
                 underconstrained = True
-                cs2 = make_hcs_2d(p21, p21+vector.vector[1.0,0.0])
+                cs2 = make_hcs_2d(p21, p21+vector[1.0,0.0])
             else:
                 cs2 = make_hcs_2d(p21, p22)
         # in any case
@@ -175,16 +178,16 @@ class Configuration:
         v2 = list(shared)[1]
         p11 = self.map[v1]
         p12 = self.map[v2]
-        if tol_eq(vector.norm(p12-p11),0.0):
+        if tol_eq(norm(p12-p11),0.0):
             underconstrained = True
-            cs1 = make_hcs_2d_scaled(p11, p11+vector.vector[1.0,0.0])
+            cs1 = make_hcs_2d_scaled(p11, p11+vector[1.0,0.0])
         else:
             cs1 = make_hcs_2d_scaled(p11, p12)
         p21 = other.map[v1]
         p22 = other.map[v2]
-        if tol_eq(vector.norm(p22-p21),0.0):
+        if tol_eq(norm(p22-p21),0.0):
             underconstrained = True
-            cs2 = make_hcs_2d_scaled(p21, p21+vector.vector[1.0,0.0])
+            cs2 = make_hcs_2d_scaled(p21, p21+vector[1.0,0.0])
         else:
             cs2 = make_hcs_2d_scaled(p21, p22)
         print("%s %s" % (cs1, cs2))
@@ -198,16 +201,16 @@ class Configuration:
         """returns a matrix for a rigid transformation 
            such that points in other are mapped onto points in self
         """
-        shared = Set(self.vars()).intersection(other.vars())
+        shared = set(self.vars()).intersection(other.vars())
         underconstrained = self.underconstrained or other.underconstrained
         if len(shared) == 0:
             underconstrained = True
-            cs1 = make_hcs_3d(vector.vector([0.0,0.0,0.0]),
-                              vector.vector([0.0,1.0,0.0]),
-                              vector.vector([0.0,0.0,1.0]))
-            cs2 = make_hcs_3d(vector.vector([0.0,0.0,0.0]),
-                              vector.vector([0.0,1.0,0.0]),
-                              vector.vector([0.0,0.0,1.0]))
+            cs1 = make_hcs_3d(vector([0.0, 0.0, 0.0]),
+                              vector([0.0, 1.0, 0.0]),
+                              vector([0.0, 0.0, 1.0]))
+            cs2 = make_hcs_3d(vector([0.0, 0.0, 0.0]),
+                              vector([0.0, 1.0, 0.0]),
+                              vector([0.0, 0.0, 1.0]))
         elif len(shared) == 1:
             if len(self.vars()) > 1 and len(other.vars()) > 1:
                 underconstrained = True
@@ -215,11 +218,11 @@ class Configuration:
             p1s = self.map[v1]
             p1o = other.map[v1]
             cs1 = make_hcs_3d(p1s,
-                              p1s+vector.vector([1.0,0.0,0.0]),
-                              p1s+vector.vector([0.0,1.0,0.0]))
+                              p1s+vector([1.0, 0.0, 0.0]),
+                              p1s+vector([0.0, 1.0, 0.0]))
             cs2 = make_hcs_3d(p1o,
-                              p1o+vector.vector([1.0,0.0,0.0]),
-                              p1o+vector.vector([0.0,1.0,0.0]))
+                              p1o+vector([1.0, 0.0, 0.0]),
+                              p1o+vector([0.0, 1.0, 0.0]))
         elif len(shared) == 2:
             if len(self.vars()) > 2 and len(other.vars()) > 2:
                 underconstrained = True
@@ -229,9 +232,9 @@ class Configuration:
             v2 = list(shared)[1]
             p2s = self.map[v2]
             p2o = other.map[v2]
-            p3s = p1s + vector.cross(p2s-p1s, perp2D(p2s-p1s))
-            p3o = p1o + vector.cross(p2o-p1o, perp2D(p2s-p1s))
-            if tol_eq(vector.norm(p2s-p1s),0.0):
+            p3s = p1s + cross(p2s-p1s, perp2D(p2s-p1s))
+            p3o = p1o + cross(p2o-p1o, perp2D(p2s-p1s))
+            if tol_eq(norm(p2s-p1s),0.0):
                 underconstrained = True
             cs1 = make_hcs_3d(p1s, p2s, p3s)
             cs2 = make_hcs_3d(p1o, p2o, p3o)
@@ -243,21 +246,21 @@ class Configuration:
             p2s = self.map[v2]
             p3s = self.map[v3]
             cs1 = make_hcs_3d(p1s, p2s, p3s)
-            if tol_eq(vector.norm(p2s-p1s),0.0):
+            if tol_eq(norm(p2s-p1s), 0.0):
                 underconstrained = True
-            if tol_eq(vector.norm(p3s-p1s),0.0):
+            if tol_eq(norm(p3s-p1s), 0.0):
                 underconstrained = True
-            if tol_eq(vector.norm(p3s-p2s),0.0):
+            if tol_eq(norm(p3s-p2s), 0.0):
                 underconstrained = True
             p1o = other.map[v1]
             p2o = other.map[v2]
             p3o = other.map[v3]
             cs2 = make_hcs_3d(p1o, p2o, p3o)
-            if tol_eq(vector.norm(p2o-p1o),0.0):
+            if tol_eq(norm(p2o-p1o), 0.0):
                 underconstrained = True
-            if tol_eq(vector.norm(p3o-p1o),0.0):
+            if tol_eq(norm(p3o-p1o), 0.0):
                 underconstrained = True
-            if tol_eq(vector.norm(p3o-p2o),0.0):
+            if tol_eq(norm(p3o-p2o), 0.0):
                 underconstrained = True
         # in any case:
         t = cs_transform_matrix(cs2, cs1)
@@ -265,7 +268,7 @@ class Configuration:
         return t
 
     def _merge_scale_transform_3D(self, other):
-        shared = Set(self.vars()).intersection(other.vars())
+        shared = set(self.vars()).intersection(other.vars())
         if len(shared) == 0:
             return self._merge_transform_3D(other)
         elif len(shared) == 1:
@@ -277,18 +280,21 @@ class Configuration:
             v2 = list(shared)[1]
             p2s = self.map[v2]
             p2o = other.map[v2]
-            scale = vector.norm(p2s-p1s) / vector.norm(p2o-p1o)
+            scale = norm(p2s-p1s) / norm(p2o-p1o)
             scale_trans = pivot_scale_3D(p1o,scale)
-            diag_print("scale_trans = "+str(scale_trans),"Configuration.merge_scale_transform_3D")
+            diag_print("scale_trans = "+str(scale_trans),
+                       "Configuration.merge_scale_transform_3D")
             merge_trans = self._merge_transform_3D(other)
-            diag_print("merge_trans = "+str(merge_trans),"Configuration.merge_scale_transform_3D")
-            #merge_scale_trans = scale_trans.mmul(merge_trans)
+            diag_print("merge_trans = "+str(merge_trans),
+                       "Configuration.merge_scale_transform_3D")
+            # merge_scale_trans = scale_trans.mmul(merge_trans)
             merge_scale_trans = merge_trans.mmul(scale_trans)
             merge_scale_trans.underconstrained = merge_trans.underconstrained
             return merge_scale_trans
 
     def __eq__(self, other):
-        """two configurations are equal if they map onto eachother modulo rotation and translation"""
+        """two configurations are equal if they map onto eachother modulo
+        rotation and translation"""
         if hash(self) != hash(other):
             return False
         elif len(self.map) != len(other.map):
@@ -318,8 +324,9 @@ class Configuration:
         self.hashvalue = hash(val)
 
     def checkdimension(self):
-        """returns the dimension of the points, or zero if they are of different dimensions"""
-        var = iter(self.vars()).next()
+        """returns the dimension of the points, or zero if they are
+        of different dimensions"""
+        var = iter(self.vars()).__next__()
         dim = len(self.get(var))
         for var in self.map:
             if len(self.get(var)) != dim:
@@ -335,13 +342,13 @@ class Configuration:
 
 
 def test():
-    p1 = vector.vector([0.0, 0.0, 0.0])
-    p2 = vector.vector([1.0, 0.0, 0.0])
-    p3 = vector.vector([0.0, 1.0, 0.0])
+    p1 = vector([0.0, 0.0, 0.0])
+    p2 = vector([1.0, 0.0, 0.0])
+    p3 = vector([0.0, 1.0, 0.0])
     c1 = Configuration({1: p1, 2: p2})
-    q1 = vector.vector([0.0, 0.0, 0.0])
-    q2 = vector.vector([1.0, 0.0, 0.0])
-    q3 = vector.vector([0.0, -1.0, 0.0])
+    q1 = vector([0.0, 0.0, 0.0])
+    q2 = vector([1.0, 0.0, 0.0])
+    q3 = vector([0.0, -1.0, 0.0])
     c2 = Configuration({1: q1, 2: q2})
     print(c1 == c2)
 

@@ -1,6 +1,6 @@
 from includes import *
 from tree import Node
-from geosolver import GeometricCluster
+from geosolver.geometric import GeometricCluster
 from parameters import Settings
 
 from PyQt5 import QtGui, QtWidgets

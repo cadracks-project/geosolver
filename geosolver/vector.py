@@ -3,6 +3,7 @@
 #
 import math
 import random
+from functools import reduce
 
 """
 A list based vector class that supports elementwise mathematical operations
@@ -20,6 +21,7 @@ class vector(list):
     # no c'tor
 
     def __getslice__(self, i, j):
+        r"""Python 2"""
         try:
             # use the list __getslice__ method and convert
             # result to vector
@@ -27,8 +29,21 @@ class vector(list):
         except:
             raise TypeError('vector::FAILURE in __getslice__')
 
+    def __getitem__(self, index):
+        r"""Python 3"""
+        if isinstance(index, slice):
+            return vector(super(vector, self).__getitem__(index))
+        elif isinstance(index, int):
+            return super(vector, self).__getitem__(index)
+        else:
+            raise ValueError("Index is a %s" % type(index))
+
     def __add__(self, other):
         return vector(map(lambda x, y: x + y, self, other))
+        # l = []
+        # for a, b in zip(self, other):
+        #     l.append(a + b)
+        # return vector(l)
 
     def __neg__(self):
         return vector(map(lambda x: -x, self))
@@ -47,7 +62,7 @@ class vector(list):
             return vector(map(lambda x: x * other, self))
 
     def __rmul__(self, other):
-        return (self * other)
+        return self * other
 
     def __div__(self, other):
         """
@@ -57,6 +72,9 @@ class vector(list):
             return vector(map(lambda x, y: x / y, self, other))
         except:
             return vector(map(lambda x: x / other, self))
+
+    def __truediv__(self, other):
+        return self.__div__(other)
 
     def __rdiv__(self, other):
         """
@@ -96,11 +114,7 @@ class vector(list):
         """
         Prints out the vector.
         """
-        print
-        self
-
-
-###############################################################################
+        print(self)
 
 
 def isVector(x):
@@ -337,7 +351,6 @@ def atan2(a, b):
         raise TypeError('vector::FAILURE in atan2')
 
 
-###############################################################################
 if __name__ == "__main__":
 
     print('a = zeros(4)')
@@ -345,107 +358,80 @@ if __name__ == "__main__":
 
     print('a.__doc__= %s' % a.__doc__)
 
-    print
-    'a[0] = 1.0'
+    print('a[0] = 1.0')
     a[0] = 1.0
 
-    print
-    'a[3] = 3.0'
+    print('a[3] = 3.0')
     a[3] = 3.0
 
-    print
-    'a[0]=', a[0]
-    print
-    'a[1]=', a[1]
+    print('a[0]= %s' % a[0])
+    print('a[1]= %s' % a[1])
 
-    print
-    'len(a)=', len(a)
-    print
-    'a.size()=', a.size()
+    print('len(a)= %i' % len(a))
+    print('a.size()= %i' % a.size())
 
     b = vector([1, 2, 3, 4])
-    print
-    'a=', a
-    print
-    'b=', b
+    print('a=%s' % a)
+    print('b= %s' % b)
 
-    print
-    'a+b'
+    print('a+b')
     c = a + b
     c.out()
 
-    print
-    '-a'
+    print('-a')
     c = -a
     c.out()
     a.out()
 
-    print
-    'a-b'
+    print('a-b')
     c = a - b
     c.out()
 
-    print
-    'a*1.2'
+    print('a*1.2')
     c = a * 1.2
     c.out()
 
-    print
-    '1.2*a'
+    print('1.2*a')
     c = 1.2 * a
     c.out()
-    print
-    'a=', a
+    print('a= %s' % a)
 
-    print
-    'dot(a,b) = ', dot(a, b)
-    print
-    'dot(b,a) = ', dot(b, a)
+    print('dot(a,b) = %s' %dot(a, b))
+    print('dot(b,a) = %s' % dot(b, a))
 
-    print
-    'a*b'
+    print('a*b')
     c = a * b
     c.out()
 
-    print
-    'a/1.2'
+    print('a/1.2')
     c = a / 1.2
     c.out()
 
-    print
-    'a[0:2]'
+    print('a[0:2]')
     c = a[0:2]
     c.out()
 
-    print
-    'a[2:5] = [9.0, 4.0, 5.0]'
+    print('a[2:5] = [9.0, 4.0, 5.0]')
     a[2:5] = [9.0, 4.0, 5.0]
     a.out()
 
-    print
-    'sqrt(a)=', sqrt(a)
-    print
-    'pow(a, 2*ones(len(a)))=', pow(a, 2 * ones(len(a)))
-    print
-    'pow(a, 2)=', pow(a, 2 * ones(len(a)))
+    print('sqrt(a)= %s' %sqrt(a))
+    print('pow(a, 2*ones(len(a)))= %s' % pow(a, 2 * ones(len(a))))
+    print('pow(a, 2)= %s' % pow(a, 2 * ones(len(a))))
 
-    print
-    'ones(10)'
+    print('ones(10)')
     c = ones(10)
     c.out()
 
-    print
-    'zeros(10)'
+    print('zeros(10)')
     c = zeros(10)
     c.out()
 
-    print
-    'del a'
+    print('del a')
     del a
 
     try:
         a = randvec(11, 0., 2.)
         a.out()
-
     except:
         pass

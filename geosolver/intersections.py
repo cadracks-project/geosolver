@@ -1,6 +1,6 @@
 from geosolver.vector import vector, cross, dot, norm, randvec
 import math
-from geosolver.matfunc import Mat, Vec
+from geosolver.matfunc import matrix_factory, Vec
 from geosolver.tolerance import *
 from geosolver.diagnostic import *
 
@@ -62,7 +62,7 @@ def cc_int(p1, r1, p2, r2):
     where p1 and p2 are 2-vectors and r1 and r2 are scalars
     Returns a list of zero, one or two solution points.
     """
-    d = norm(p2-p1)
+    d = norm(p2 - p1)
     if not tol_gt(d, 0):
         return []
     u = ((r1*r1 - r2*r2)/d + d)/2
@@ -72,102 +72,118 @@ def cc_int(p1, r1, p2, r2):
         v = 0.0
     else:
         v = math.sqrt(r1*r1 - u*u)
-    s = (p2-p1) * u / d
-    if tol_eq(norm(s),0):
-        p3a = p1+vector([p2[1]-p1[1],p1[0]-p2[0]])*r1/d
-        if tol_eq(r1/d,0):
+    s = (p2 - p1) * u / d
+    if tol_eq(norm(s), 0):
+        p3a = p1+vector([p2[1]-p1[1], p1[0]-p2[0]])*r1/d
+        if tol_eq(r1/d, 0):
             return [p3a]
         else:
-            p3b = p1+vector([p1[1]-p2[1],p2[0]-p1[0]])*r1/d
-            return [p3a,p3b]
+            p3b = p1+vector([p1[1]-p2[1], p2[0]-p1[0]])*r1/d
+            return [p3a, p3b]
     else:
+        print("***")
+        print(p1)
+        print(s)
+        print(vector([s[1], -s[0]]))
+        print(v)
+        print(norm(s))
+        print("***")
         p3a = p1 + s + vector([s[1], -s[0]]) * v / norm(s)
-        if tol_eq(v / norm(s),0):
+        if tol_eq(v / norm(s), 0):
             return [p3a]
         else:
             p3b = p1 + s + vector([-s[1], s[0]]) * v / norm(s)
-            return [p3a,p3b]
+            return [p3a, p3b]
 
 
-def cl_int(p1,r,p2,v):
-	"""
-	Intersect a circle (p1,r) with line (p2,v)
-	where p1, p2 and v are 2-vectors, r is a scalar
-	Returns a list of zero, one or two solution points
-	"""
-	p = p2 - p1
-	d2 = v[0]*v[0] + v[1]*v[1]
-	D = p[0]*v[1] - v[0]*p[1]
-	E = r*r*d2 - D*D
-	if tol_gt(d2, 0) and tol_gt(E, 0):
-		sE = math.sqrt(E)
-		x1 = p1[0] + (D * v[1] + sign(v[1])*v[0]*sE) / d2
-		x2 = p1[0] + (D * v[1] - sign(v[1])*v[0]*sE) / d2
-		y1 = p1[1] + (-D * v[0] + abs(v[1])*sE) / d2
-		y2 = p1[1] + (-D * v[0] - abs(v[1])*sE) / d2
-		return [vector([x1,y1]), vector([x2,y2])]
-	elif tol_eq(E, 0):
-		x1 = p1[0] + D * v[1] / d2
-		y1 = p1[1] + -D * v[0] / d2
-		# return [vector([x1,y1]), vector([x1,y1])]
-		return [vector([x1,y1])]
-	else:
-		return []
+def cl_int(p1, r, p2, v):
+    """
+    Intersect a circle (p1,r) with line (p2,v)
+    where p1, p2 and v are 2-vectors, r is a scalar
+    Returns a list of zero, one or two solution points
+    """
+    p = p2 - p1
+    d2 = v[0] * v[0] + v[1] * v[1]
+    D = p[0] * v[1] - v[0] * p[1]
+    E = r * r * d2 - D * D
+    if tol_gt(d2, 0) and tol_gt(E, 0):
+        sE = math.sqrt(E)
+        x1 = p1[0] + (D * v[1] + sign(v[1]) * v[0] * sE) / d2
+        x2 = p1[0] + (D * v[1] - sign(v[1]) * v[0] * sE) / d2
+        y1 = p1[1] + (-D * v[0] + abs(v[1]) * sE) / d2
+        y2 = p1[1] + (-D * v[0] - abs(v[1]) * sE) / d2
+        return [vector([x1, y1]), vector([x2, y2])]
+    elif tol_eq(E, 0):
+        x1 = p1[0] + D * v[1] / d2
+        y1 = p1[1] + -D * v[0] / d2
+        # return [vector([x1,y1]), vector([x1,y1])]
+        return [vector([x1, y1])]
+    else:
+        return []
 
-def cr_int(p1,r,p2,v):
+
+def cr_int(p1, r, p2, v):
     """
     Intersect a circle (p1,r) with ray (p2,v) (a half-line)
     where p1, p2 and v are 2-vectors, r is a scalar
     Returns a list of zero, one or two solutions.
     """
     sols = []
-    all = cl_int(p1,r,p2,v)
+    all = cl_int(p1, r, p2, v)
     for s in all:
-        if tol_gte(dot(s-p2,v), 0):          # gt -> gte 30/6/2006
+        if tol_gte(dot(s - p2, v), 0):  # gt -> gte 30/6/2006
             sols.append(s)
     return sols
 
 
 def ll_int(p1, v1, p2, v2):
-	"""Intersect line though p1 direction v1 with line through p2 direction v2.
-	   Returns a list of zero or one solutions
-	"""
-	diag_print("ll_int "+str(p1)+str(v1)+str(p2)+str(v2),"intersections")
-	if tol_eq((v1[0]*v2[1])-(v1[1]*v2[0]),0):
-		return []
-	elif not tol_eq(v2[1],0.0):
-		d = p2-p1
-		r2 = -v2[0]/v2[1]
-		f = v1[0] + v1[1]*r2
-		t1 = (d[0] + d[1]*r2) / f
-	else:
-		d = p2-p1
-		t1 = d[1]/v1[1]
-	return [p1 + v1*t1]
+    """Intersect line though p1 direction v1 with line through p2 direction v2.
+       Returns a list of zero or one solutions
+    """
+    diag_print("ll_int " + str(p1) + str(v1) + str(p2) + str(v2),
+               "intersections")
+    if tol_eq((v1[0] * v2[1]) - (v1[1] * v2[0]), 0):
+        return []
+    elif not tol_eq(v2[1], 0.0):
+        d = p2 - p1
+        r2 = -v2[0] / v2[1]
+        f = v1[0] + v1[1] * r2
+        t1 = (d[0] + d[1] * r2) / f
+    else:
+        d = p2 - p1
+        t1 = d[1] / v1[1]
+    return [p1 + v1 * t1]
+
 
 def lr_int(p1, v1, p2, v2):
-	"""Intersect line though p1 direction v1 with ray through p2 direction v2.
-	   Returns a list of zero or one solutions
-	"""
-	diag_print("lr_int "+str(p1)+str(v1)+str(p2)+str(v2),"intersections")
-	s = ll_int(p1,v1,p2,v2)
-	if len(s) > 0 and tol_gte(dot(s[0]-p2,v2), 0):
-		return s
-	else:
-		return []
+    """Intersect line though p1 direction v1 with ray through p2 direction v2.
+       Returns a list of zero or one solutions
+    """
+    diag_print("lr_int " + str(p1) + str(v1) + str(p2) + str(v2),
+               "intersections")
+    s = ll_int(p1, v1, p2, v2)
+    if len(s) > 0 and tol_gte(dot(s[0] - p2, v2), 0):
+        return s
+    else:
+        return []
+
 
 def rr_int(p1, v1, p2, v2):
-	"""Intersect ray though p1 direction v1 with ray through p2 direction v2.
-	   Returns a list of zero or one solutions
-	"""
-	diag_print("rr_int "+str(p1)+str(v1)+str(p2)+str(v2),"intersections")
-	s = ll_int(p1,v1,p2,v2)
-	if len(s) > 0 and tol_gte(dot(s[0]-p2,v2), 0) and tol_gte(dot(s[0]-p1,v1),0):
-		return s
-	else:
-		return []
+    """Intersect ray though p1 direction v1 with ray through p2 direction v2.
+       Returns a list of zero or one solutions
+    """
+    diag_print("rr_int " + str(p1) + str(v1) + str(p2) + str(v2),
+               "intersections")
+    s = ll_int(p1, v1, p2, v2)
+    if len(s) > 0 and tol_gte(dot(s[0] - p2, v2), 0) and tol_gte(
+            dot(s[0] - p1, v1), 0):
+        return s
+    else:
+        return []
+
 
 # ----- Geometric properties -------
+
 
 def angle_3p(p1, p2, p3):
     """Returns the angle, in radians, rotating vector p2p1 to vector p2p3.
@@ -182,18 +198,18 @@ def angle_3p(p1, p2, p3):
     """
     d21 = norm(p2-p1)
     d23 = norm(p3-p2)
-    if tol_eq(d21,0) or tol_eq(d23,0):
+    if tol_eq(d21, 0) or tol_eq(d23, 0):
         return None         # degenerate angle
     v21 = (p1-p2) / d21
     v23 = (p3-p2) / d23
-    t = dot(v21,v23) # / (d21 * d23)
+    t = dot(v21, v23)  # / (d21 * d23)
     if t > 1.0:             # check for floating point error
         t = 1.0
     elif t < -1.0:
         t = -1.0
     angle = math.acos(t)
     if len(p1) == 2:        # 2D case
-        if is_counterclockwise(p1,p2,p3):
+        if is_counterclockwise(p1, p2, p3):
             angle = -angle
     return angle
 
@@ -267,16 +283,16 @@ def make_hcs_3d (a, b, c):
     u = u / norm(u)
     v = c-a
     v = v / norm(v)
-    w = cross(u,v)
-    v = cross(w,u)
-    hcs = Mat([
-        [u[0],v[0], w[0], a[0]],
-        [u[1],v[1], w[1], a[1]],
-        [u[2],v[2], w[2], a[2]],
-        [0.0, 0.0, 0.0, 1.0]    ])
+    w = cross(u, v)
+    v = cross(w, u)
+    hcs = matrix_factory([[u[0], v[0], w[0], a[0]],
+                          [u[1], v[1], w[1], a[1]],
+                          [u[2], v[2], w[2], a[2]],
+                          [0.0, 0.0, 0.0, 1.0]])
     return hcs
 
-def make_hcs_3d_scaled (a, b, c):
+
+def make_hcs_3d_scaled(a, b, c):
     """build a 3D homogeneus coordiate system from three vectors"""
     # create orthnormal basis
     u = b-a
@@ -288,7 +304,7 @@ def make_hcs_3d_scaled (a, b, c):
     # scale
     u = u / norm(u) / norm(b-a)
     v = v / norm(v) / norm(c-a)
-    hcs = Mat([
+    hcs = matrix_factory([
         [u[0],v[0], w[0], a[0]],
         [u[1],v[1], w[1], a[1]],
         [u[2],v[2], w[2], a[2]],
@@ -303,8 +319,9 @@ def make_hcs_2d (a, b):
     else:
         u = u / norm(u)
     v = vector([-u[1], u[0]])
-    hcs = Mat([ [u[0],v[0],a[0]] , [u[1],v[1],a[1]] , [0.0, 0.0, 1.0] ] )
+    hcs = matrix_factory([[u[0], v[0], a[0]] , [u[1], v[1], a[1]] , [0.0, 0.0, 1.0]])
     return hcs
+
 
 def make_hcs_2d_scaled (a, b):
     """build a 2D homogeneus coordiate system from two vectors, but scale with distance between input point"""
@@ -314,8 +331,9 @@ def make_hcs_2d_scaled (a, b):
     #else:
     #    u = u / norm(u)
     v = vector([-u[1], u[0]])
-    hcs = Mat([ [u[0],v[0],a[0]] , [u[1],v[1],a[1]] , [0.0, 0.0, 1.0] ] )
+    hcs = matrix_factory([[u[0], v[0], a[0]] , [u[1], v[1], a[1]] , [0.0, 0.0, 1.0]])
     return hcs
+
 
 def cs_transform_matrix(from_cs, to_cs):
     """returns a transform matrix from from_cs to to_cs"""
@@ -331,8 +349,9 @@ def cs_transform_matrix(from_cs, to_cs):
 #    res = vector(hres[1:-1]) / hres[-1]
 #    return res
 
+
 def translate_2D(dx,dy):
-	mat = Mat([
+	mat = matrix_factory([
 		[1.0, 0.0, dx] ,
 		[0.0, 1.0, dy] ,
 		[0.0, 0.0, 1.0] ] )
@@ -340,14 +359,14 @@ def translate_2D(dx,dy):
 
 
 def rotate_2D(angle):
-	mat = Mat([
+	mat = matrix_factory([
 		[math.sin[angle],math.cos[angle],0.0] ,
 		[math.cos[angle],-math.sin[angle],0.0] ,
 		[0.0, 0.0, 1.0] ] )
 	return mat
 
 def translate_3D(dx,dy,dz):
-    mat = Mat([
+    mat = matrix_factory([
 	[1.0, 0.0, 0.0, dx] ,
 	[0.0, 1.0, 0.0, dy] ,
 	[0.0, 0.0, 1.0, dz] ,
@@ -355,7 +374,7 @@ def translate_3D(dx,dy,dz):
     return mat
 
 def scale_3D(sx, sy, sz):
-    mat = Mat([
+    mat = matrix_factory([
 	[sx, 0.0, 0.0, 0.0] ,
 	[0.0, sy, 0.0, 0.0] ,
 	[0.0, 0.0, sz, 0.0] ,
@@ -363,7 +382,7 @@ def scale_3D(sx, sy, sz):
     return mat
 
 def uniform_scale_3D(scale):
-    mat = Mat([
+    mat = matrix_factory([
 	[scale, 0.0, 0.0, 0.0] ,
 	[0.0, scale, 0.0, 0.0] ,
 	[0.0, 0.0, scale, 0.0] ,

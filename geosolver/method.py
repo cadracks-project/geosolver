@@ -220,26 +220,23 @@ class MethodGraph:
         the user should call this fucntion at a convenient time. 
         """
         while len(self._changed) != 0:
-            pick = self._changed.keys()[0]
+            pick = list(self._changed.keys())[0]
             methods = self._graph.outgoing_vertices(pick)
             for met in methods:
                 self._execute(met)
-            #end for
+
             if pick in self._changed:
                 del self._changed[pick]
-        #end while
-    #end def propagate
 
     def clear(self):
         """clear methodgraph by removing all variables"""
-        while (len(self._map) > 0):
+        while len(self._map) > 0:
             var = self._map.keys()[0]
             self.rem_variable(var)
-        #wend
-    #def
 
     def execute(self, met):
-        """Execute a method and proagate changes. Method must be in Methodgraph"""
+        """Execute a method and proagate changes.
+        Method must be in Methodgraph"""
         if met in self._methods:
             self._execute(met)
             self.propagate()

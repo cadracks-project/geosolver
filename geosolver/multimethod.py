@@ -77,10 +77,10 @@ class MultiMethod(Method):
         if len(multi_inputs) > 0:
             mvar = multi_inputs[0]
             values = inmap[mvar]
-            output = Set()
+            output = set()
             for value in values:
                 base_inmap[mvar] = value
-                output.union_update(self._recurse_execute(inmap, base_inmap, multi_inputs[1:]))
+                output.update(self._recurse_execute(inmap, base_inmap, multi_inputs[1:]))
             return output
         else:
             return self.multi_execute(base_inmap)

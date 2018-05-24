@@ -1,16 +1,18 @@
 # coding: utf-8
 
-import preferencesDlg, compositionView
-from includes import *
-from viewportManager import *
-from prototypeObjects import PrototypeManager
-from tools import *
-from panel import *
-from solutionView import *
-from parameters import Settings
-from geosolver import randomproblem
+import sys
 
-from ui_randomProblemDialog import Ui_randomProblemDialog
+import solvergui.preferencesDlg, solvergui.compositionView
+from solvergui.includes import *
+from solvergui.viewportManager import *
+from solvergui.prototypeObjects import PrototypeManager
+from solvergui.tools import *
+from solvergui.panel import *
+from solvergui.solutionView import *
+from solvergui.parameters import Settings
+from geosolver.randomproblem import random_triangular_problem_3D
+
+from solvergui.ui_randomProblemDialog import Ui_randomProblemDialog
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -295,8 +297,10 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.saveFileName = filename
             self.loadCommand = LoadCommand(self)
             self.loadCommand.execute(self.saveFileName)
-            nameForTitle = QtCore.QString(self.saveFileName)
-            title = nameForTitle.remove(0, nameForTitle.lastIndexOf("/")+1)
+            nameForTitle = self.saveFileName
+            from os.path import basename
+            title = basename(nameForTitle)
+            # title = nameForTitle.remove(0, nameForTitle.lastIndexOf("/")+1)
             self.setWindowTitle("- " + title + self.tr(" - Geometric Constraint Solver"))
 
     def save(self):
@@ -306,7 +310,9 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.saveCommand = SaveCommand(self)
             self.saveCommand.execute(self.saveFileName)
             nameForTitle = self.saveFileName
-            title = nameForTitle.remove(0, nameForTitle.lastIndexOf("/")+1)
+            from os.path import basename
+            title = basename(nameForTitle)
+            # title = nameForTitle.remove(0, nameForTitle.lastIndexOf("/")+1)
             self.setWindowTitle("- " + title + self.tr(" - Geometric Constraint Solver"))
 
     def saveAs(self):
@@ -334,20 +340,20 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
     # Rick 20090522
     def generateRandom(self):
-        ## first do as if File->New was selected
+        # # first do as if File->New was selected
         self.new()
-        ## then show randomProblemDialog
-        #ui = Ui_randomProblemDialog()
-        #dialog = QtDialog()
-        ## create random problem
+        # # then show randomProblemDialog
+        # ui = Ui_randomProblemDialog()
+        # dialog = QtDialog()
+        # # create random problem
         (numpoints, ratio, size, rounding) = (10, 0.0, 100.0, 0.0)
-        problem = randomproblem.random_triangular_problem_3D(numpoints, size, rounding, ratio)
+        problem = random_triangular_problem_3D(numpoints, size, rounding, ratio)
         prototypeManager = PrototypeManager()
         prototypeManager.setProblem(problem)
         self.viewportManager.updateViewports()
-        ## set window title
-        #title = "Untitled"
-        #self.setWindowTitle(title + self.tr(" - Geometric Constraint Solver"))
+        # # set window title
+        # title = "Untitled"
+        # self.setWindowTitle(title + self.tr(" - Geometric Constraint Solver"))
 
     def tr(self, string):
         return QtWidgets.QApplication.translate("Ui_MainWindow", string, None)

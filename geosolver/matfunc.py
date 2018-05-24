@@ -3,15 +3,24 @@
    Updates and documentation:  http://users.rcn.com/python/download/python.htm
    Revision In Use:  'File %n, Ver %v, Date %f'                             '''
 Version = 'File MATFUNC.PY, Ver 183, Date 12-Dec-2002,14:33:42'
-# Modified by Rick van der Meiden 25-1-2007: included a makehash() and __hash__ in Table.
+# Modified by Rick van der Meiden 25-1-2007: included a makehash()
+# and __hash__ in Table.
 # Modified by Rick van der Meiden 20090311: added normSquared
 
 from functools import reduce
+import logging
 
-import operator, math, random
+import operator
+import math
+import random
+
+logger = logging.getLogger(__name__)
+
 NPRE, NPOST = 0, 0                    # Disables pre and post condition checks
 
+
 def iszero(z):
+    logger.debug("iszero() got a %s" % type(z))
     return abs(z) < .000001
 
 
@@ -48,14 +57,15 @@ class Table(list):
 
     def __init__(self, elems):
         list.__init__(self, elems)
-        if len(list(elems)) and hasattr(elems[0], 'dim'):
+        elems = list(elems)
+        if len(elems) and hasattr(elems[0], 'dim'):
             self.dim = elems[0].dim + 1
         self.makehash()   # Rick van der Meiden 25-1-2007
 
-    def __str__( self ):
+    def __str__(self):
         return separator[self.dim].join( map(str, self))
 
-    def map( self, op, rhs=None ):
+    def map(self, op, rhs=None ):
         '''Apply a unary operator to every element in the matrix or a binary
         operator to corresponding elements in two arrays.
         If the dimensions are different, broadcast the smaller dimension over
@@ -67,7 +77,7 @@ class Table(list):
             return self.__class__([op(e, rhs) for e in self])
         elif self.dim == rhs.dim:  # Same level Vec / Vec or Matrix / Matrix
             assert NPRE or len(self) == len(rhs), 'Table operation requires len sizes to agree'
-            return self.__class__(map(op, self, rhs))
+            return self.__class__(list(map(op, self, rhs)))
         elif self.dim < rhs.dim:  # Vec / Matrix
             return self.__class__( [op(self, e) for e in rhs])
         return self.__class__([op(e, rhs) for e in self])  # Matrix / Vec
@@ -85,7 +95,7 @@ class Table(list):
         return self.map(operator.sub, rhs)
 
     def __add__(self, rhs):
-        return self.map( operator.add, rhs )
+        return self.map(operator.add, rhs)
 
     def __rmul__(self, lhs):
         return self*lhs
@@ -170,7 +180,7 @@ class Vec(Table):
         return self / self.norm()
 
     def outer(self, otherVec):
-        return Mat([otherVec*x for x in self])
+        return matrix_factory([otherVec * x for x in self])
 
     def cross( self, otherVec ):
         'Compute a Vector or Cross Product with another vector'
@@ -199,59 +209,90 @@ class Vec(Table):
         num, den = self[:degree+1], self[degree+1:] + [1]
         return num.polyval(x) / den.polyval(x)
 
+
 class Matrix(Table):
     __slots__ = ['size', 'rows', 'cols']
-    def __init__( self, elems ):
-        'Form a matrix from a list of lists or a list of Vecs'
-        Table.__init__( self, hasattr(elems[0], 'dot') and elems or map(Vec,map(tuple,elems)) )
+
+    def __init__(self, elems):
+        """Form a matrix from a list of lists or a list of Vecs"""
+        # Table.__init__(self, hasattr(elems[0], 'dot') and elems or map(Vec, map(tuple, elems)))
+        Table.__init__(self, hasattr(elems[0], 'dot') and elems or map(Vec, map(
+            tuple, elems)))
         self.size = self.rows, self.cols = len(elems), len(elems[0])
-    def tr( self ):
-        'Tranpose elements so that Transposed[i][j] = Original[j][i]'
-        return Mat(zip(*self))
+
+    def tr(self):
+        """Transpose elements so that Transposed[i][j] = Original[j][i]"""
+        logger.debug("self has %i elements" % len(self))
+        logger.debug("first element is a %s" % type(self[0]))
+        return matrix_factory(list(zip(*self)))
+
     def star( self ):
-        'Return the Hermetian adjoint so that Star[i][j] = Original[j][i].conjugate()'
+        """Return the Hermetian adjoint
+        so that Star[i][j] = Original[j][i].conjugate()"""
+        logger.debug("star()")
         return self.tr().conjugate()
-    def diag( self ):
+
+    def diag(self):
         'Return a vector composed of elements on the matrix diagonal'
-        return Vec( [self[i][i] for i in range(min(self.size))] )
-    def trace( self ): return self.diag().sum()
-    def mmul( self, other ):
+        return Vec([self[i][i] for i in range(min(self.size))])
+
+    def trace(self):
+        return self.diag().sum()
+
+    def mmul( self, other):
         'Matrix multiply by another matrix or a column vector '
-        if other.dim==2: return Mat( map(self.mmul, other.tr()) ).tr()
-        assert NPRE or self.cols == len(other)
-        return Vec( map(other.dot, self) )
-    def augment( self, otherMat ):
+        logger.debug("mmul()")
+        if other.dim == 2:
+            logger.debug("other.dim == 2")
+            return matrix_factory(map(self.mmul, other.tr())).tr()
+        else:
+            logger.debug("other.dim != 2")
+            assert NPRE or self.cols == len(other)
+            return Vec(map(other.dot, self))
+
+    def augment(self, otherMat ):
         'Make a new matrix with the two original matrices laid side by side'
         # assert self.rows == otherMat.rows, 'Size mismatch: %s * %s' % (`self.size`, `otherMat.size`)
         if self.rows != otherMat.rows:
             raise AssertionError('Size mismatch: %i * %i' % (self.size, otherMat.size))
-        return Mat( map(Table.concat, self, otherMat) )
+        return matrix_factory(map(Table.concat, self, otherMat))
+
     def qr( self, ROnly=0 ):
-        'QR decomposition using Householder reflections: Q*R==self, Q.tr()*Q==I(n), R upper triangular'
+        """QR decomposition using Householder reflections:
+        Q*R==self, Q.tr()*Q==I(n), R upper triangular"""
+        logger.debug("qr()")
         R = self
         m, n = R.size
-        for i in range(min(m,n)):
+        for i in range(min(m, n)):
             v, beta = R.tr()[i].house(i)
-            R -= v.outer( R.tr().mmul(v)*beta )
-        for i in range(1,min(n,m)): R[i][:i] = [0] * i
-        R = Mat(R[:n])
-        if ROnly: return R
+            R -= v.outer( R.tr().mmul(v)*beta)
+        for i in range(1, min(n, m)):
+            R[i][:i] = [0] * i
+        R = matrix_factory(R[:n])
+        if ROnly:
+            return R
         Q = R.tr().solve(self.tr()).tr()       # Rt Qt = At    nn  nm  = nm
         self.qr = lambda r=0, c=self: not r and c==self and (Q,R) or Matrix.qr(self,r) #Cache result
         assert NPOST or m>=n and Q.size==(m,n) and isinstance(R,UpperTri) or m<n and Q.size==(m,m) and R.size==(m,n)
         assert NPOST or Q.mmul(R)==self and Q.tr().mmul(Q)==eye(min(m,n))
         return Q, R
+
     def _solve( self, b ):
         '''General matrices (incuding) are solved using the QR composition.
         For inconsistent cases, returns the least squares solution'''
         Q, R = self.qr()
-        return R.solve( Q.tr().mmul(b) )
+        return R.solve(Q.tr().mmul(b))
+
     def solve( self, b ):
-        'Divide matrix into a column vector or matrix and iterate to improve the solution'
-        if b.dim==2: return Mat( map(self.solve, b.tr()) ).tr()
+        """Divide matrix into a column vector or matrix and iterate
+        to improve the solution"""
+        logger.debug("solve()")
+        if b.dim==2:
+            return matrix_factory(map(self.solve, b.tr())).tr()
         assert NPRE or self.rows == len(b), 'Matrix row count %d must match vector length %d' % (self.rows, len(b))
-        x = self._solve( b )
+        x = self._solve(b)
         diff = b - self.mmul(x)
+        logger.debug("Type of diff : %s" % type(diff))
         maxdiff = diff.dot(diff)
         for i in range(10):
             xnew = x + self._solve( diff )
@@ -259,16 +300,20 @@ class Matrix(Table):
             maxdiffnew = diffnew.dot(diffnew)
             if maxdiffnew >= maxdiff:  break
             x, diff, maxdiff = xnew, diffnew, maxdiffnew
-            #print >> sys.stderr, i+1, maxdiff
+            # print >> sys.stderr, i+1, maxdiff
         assert NPOST or self.rows!=self.cols or self.mmul(x) == b
         return x
-    def rank( self ):  return Vec([ not row.forall(iszero) for row in self.qr(ROnly=1) ]).sum()
+
+    def rank(self):
+        return Vec([not row.forall(iszero) for row in self.qr(ROnly=1) ]).sum()
+
 
 class Square(Matrix):
-    def lu( self ):
-        'Factor a square matrix into lower and upper triangular form such that L.mmul(U)==A'
+    def lu(self):
+        """Factor a square matrix into lower and upper triangular form
+        such that L.mmul(U)==A"""
         n = self.rows
-        L, U = eye(n), Mat(self[:])
+        L, U = eye(n), matrix_factory(self[:])
         for i in range(n):
             for j in range(i+1,U.rows):
                 assert U[i][i] != 0.0, 'LU requires non-zero elements on the diagonal'
@@ -276,6 +321,7 @@ class Square(Matrix):
                 U[j] -= U[i] * m
         assert NPOST or isinstance(L,LowerTri) and isinstance(U,UpperTri) and L*U==self
         return L, U
+
     def __pow__( self, exp ):
         'Raise a square matrix to an integer power (i.e. A**3 is the same as A.mmul(A.mmul(A))'
         assert NPRE or exp==int(exp) and exp>0, 'Matrix powers only defined for positive integers not %s' % exp
@@ -283,8 +329,13 @@ class Square(Matrix):
         if exp&1: return self.mmul(self ** (exp-1))
         sqrme = self ** (exp/2)
         return sqrme.mmul(sqrme)
-    def det( self ):  return self.qr( ROnly=1 ).det()
-    def inverse( self ):  return self.solve( eye(self.rows) )
+
+    def det(self):
+        return self.qr(ROnly=1).det()
+
+    def inverse(self):
+        return self.solve(eye(self.rows))
+
     def hessenberg( self ):
         '''Householder reduction to Hessenberg Form (zeroes below the diagonal)
         while keeping the same eigenvalues as self.'''
@@ -293,8 +344,9 @@ class Square(Matrix):
             self -= v.outer( self.tr().mmul(v)*beta )
             self -= self.mmul(v).outer(v*beta)
         return self
-    def eigs( self ):
-        'Estimate principal eigenvalues using the QR with shifts method'
+
+    def eigs(self):
+        """Estimate principal eigenvalues using the QR with shifts method"""
         origTrace, origDet = self.trace(), self.det()
         self = self.hessenberg()
         eigvals = Vec([])
@@ -304,18 +356,23 @@ class Square(Matrix):
                 q, r = (self - shift).qr()
                 self = r.mmul(q) + shift
             eigvals.append( self[i][i] )
-            self = Mat( [self[r][:i] for r in range(i)] )
+            self = matrix_factory([self[r][:i] for r in range(i)])
         eigvals.append( self[0][0] )
         assert NPOST or iszero( (abs(origDet) - abs(eigvals.prod())) / 1000.0 )
         assert NPOST or iszero( origTrace - eigvals.sum() )
         return Vec(eigvals)
 
+
 class Triangular(Square):
-    def eigs( self ):  return self.diag()
-    def det( self ):  return self.diag().prod()
+    def eigs(self):
+        return self.diag()
+
+    def det( self ):
+        return self.diag().prod()
+
 
 class UpperTri(Triangular):
-    def _solve( self, b ):
+    def _solve( self, b):
         'Solve an upper triangular matrix using backward substitution'
         x = Vec([])
         for i in range(self.rows-1, -1, -1):
@@ -323,26 +380,41 @@ class UpperTri(Triangular):
             x.insert(0, (b[i] - x.dot(self[i][i+1:])) / self[i][i] )
         return x
 
+
 class LowerTri(Triangular):
     def _solve( self, b ):
         'Solve a lower triangular matrix using forward substitution'
         x = Vec([])
         for i in range(self.rows):
             assert NPRE or self[i][i], 'Forward sub requires non-zero elements on the diagonal'
-            x.append( (b[i] - x.dot(self[i][:i])) / self[i][i] )
+            x.append((b[i] - x.dot(self[i][:i])) / self[i][i] )
         return x
 
-def Mat( elems ):
-    'Factory function to create a new matrix.'
+
+def matrix_factory(elems):
+    r"""Factory function to create a new matrix.
+    
+    """
+    # elems = list(elems)
+    logger.debug("matrix_factory() got : %s" % str(elems))
+
     m, n = len(elems), len(elems[0])
-    if m != n: return Matrix(elems)
-    if n <= 1: return Square(elems)
+
+    if m != n:
+        return Matrix(elems)
+
+    if n <= 1:
+        return Square(elems)
+
     for i in range(1, len(elems)):
-        if not iszero( max(map(abs, elems[i][:i])) ):
+        logger.debug("Calling iszero() for index %i" % i)
+        if not iszero(max(map(abs, elems[i][:i]))):
             break
-    else: return UpperTri(elems)
+    else:
+        return UpperTri(elems)
+
     for i in range(0, len(elems)-1):
-        if not iszero( max(map(abs, elems[i][i+1:])) ):
+        if not iszero(max(map(abs, elems[i][i+1:]))):
             return Square(elems)
     return LowerTri(elems)
 
@@ -357,46 +429,53 @@ def funToVec( tgtfun, low=-1, high=1, steps=40, EqualSpacing=0 ):
         scale, base = (0.0+high-low)/2.0, (0.0+high+low)/2.0
         xvec = [base+scale*math.cos(((2*steps-1-2*i)*math.pi)/(2*steps)) for i in range(steps)]
     yvec = map(tgtfun, xvec)
-    return Mat( [xvec, yvec] )
+    return matrix_factory([xvec, yvec])
 
 
 def funfit(xy, basisfuns):
     """Solves design matrix for approximating to basis functions"""
     xvec, yvec = xy
-    return Mat([ map(form, xvec) for form in basisfuns ]).tr().solve(Vec(yvec))
+    return matrix_factory([map(form, xvec) for form in basisfuns]).tr().solve(Vec(yvec))
 
 
 def polyfit(xy, degree=2 ):
     """Solves Vandermonde design matrix for approximating polynomial coefficients"""
     xvec, yvec = xy
-    return Mat([ [x**n for n in range(degree,-1,-1)] for x in xvec ]).solve(Vec(yvec))
+    return matrix_factory([[x ** n for n in range(degree, -1, -1)] for x in xvec]).solve(Vec(yvec))
 
 
 def ratfit(xy, degree=2 ):
     """Solves design matrix for approximating rational polynomial
     coefficients (a*x**2 + b*x + c)/(d*x**2 + e*x + 1)"""
     xvec, yvec = xy
-    return Mat([[x**n for n in range(degree,-1,-1)]+[-y*x**n for n in range(degree,0,-1)] for x,y in zip(xvec,yvec)]).solve(Vec(yvec))
+    return matrix_factory([[x ** n for n in range(degree, -1, -1)] + [-y * x ** n for n in range(degree, 0, -1)] for x, y in zip(xvec, yvec)]).solve(Vec(yvec))
+
 
 def genmat(m, n, func):
-    if not n: n=m
-    return Mat([ [func(i,j) for i in range(n)] for j in range(m) ])
+    if not n:
+        n=m
+    return matrix_factory([[func(i, j) for i in range(n)] for j in range(m)])
+
 
 def zeroes(m=1, n=None):
     'Zero matrix with side length m-by-m or m-by-n.'
     return genmat(m,n, lambda i,j: 0)
 
+
 def eye(m=1, n=None):
     'Identity matrix with side length m-by-m or m-by-n'
     return genmat(m,n, lambda i,j: i==j)
+
 
 def hilb(m=1, n=None):
     'Hilbert matrix with side length m-by-m or m-by-n.  Elem[i][j]=1/(i+j+1)'
     return genmat(m,n, lambda i,j: 1.0/(i+j+1.0))
 
+
 def rand(m=1, n=None):
     'Random matrix with side length m-by-m or m-by-n'
     return genmat(m,n, lambda i,j: random.random())
+
 
 if __name__ == '__main__':
     import cmath
@@ -419,12 +498,12 @@ if __name__ == '__main__':
     print(eye(4))
     print(hilb(3, 5))
 
-    C = Mat([[1, 2, 3], [4, 5, 1, ], [7, 8, 9]])
+    C = matrix_factory([[1, 2, 3], [4, 5, 1, ], [7, 8, 9]])
     print(C.mmul( C.tr()), '\n')
     print(C ** 5, '\n')
     print(C + C.tr(), '\n')
 
-    A = C.tr().augment( Mat([[10, 11, 13]]).tr()).tr()
+    A = C.tr().augment(matrix_factory([[10, 11, 13]]).tr()).tr()
     q, r = A.qr()
     assert q.mmul(r) == A
     assert q.tr().mmul(q)==eye(3)
@@ -456,7 +535,7 @@ if __name__ == '__main__':
     mtable = Vec([1, 2, 3]).outer(Vec([1, 2]))
     print(mtable, mtable.size)
 
-    A = Mat([[2, 0, 3], [1, 5, 1], [18, 0, 6]])
+    A = matrix_factory([[2, 0, 3], [1, 5, 1], [18, 0, 6]])
     print('A:')
     print(A)
     print('eigs:')
@@ -465,17 +544,17 @@ if __name__ == '__main__':
     print('det(A)')
     print(A.det())
 
-    c = Mat([[1, 2, 30],
-             [4, 5, 10],
-             [10, 80, 9]])  # Failed example from Konrad Hinsen
+    c = matrix_factory([[1, 2, 30],
+                        [4, 5, 10],
+                        [10, 80, 9]])  # Failed example from Konrad Hinsen
     print('C:\n', c)
     print(c.eigs())
     print('Should be:', Vec([-8.9554, 43.2497, -19.2943]))
 
-    A = Mat([[1, 2, 3, 4],
-             [4, 5, 6, 7],
-             [2, 1, 5, 0],
-             [4, 2, 1, 0]])    # Kincaid and Cheney p.326
+    A = matrix_factory([[1, 2, 3, 4],
+                        [4, 5, 6, 7],
+                        [2, 1, 5, 0],
+                        [4, 2, 1, 0]])    # Kincaid and Cheney p.326
     print('A:\n', A)
     print(A.eigs())
     print('Should be:', Vec([3.5736, 0.1765, 11.1055, -3.8556]))

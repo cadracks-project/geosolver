@@ -331,7 +331,7 @@ def random_distance_problem_3D(npoints, radius, roundoff):
 
 def random_triangular_problem_3D(npoints, radius, roundoff, pangle):
     problem = random_distance_problem_3D(npoints, radius, roundoff)
-    points = problem.cg.variables()
+    points = list(problem.cg.variables())
     triangles = []
     for i1 in range(len(points)):
         for i2 in range(i1 + 1, len(points)):

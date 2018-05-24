@@ -2,15 +2,15 @@
 
 import sys
 
-if sys.version_info[0] > 2:
-    py2 = False
-else:
-    py2 = True
-
-if py2 is True:
-    from sets import Set, ImmutableSet
-else:
-    pass
+# if sys.version_info[0] > 2:
+#     py2 = False
+# else:
+#     py2 = True
+#
+# if py2 is True:
+#     from sets import Set, ImmutableSet
+# else:
+#     pass
 
 from geosolver.clsolver import *
 # from sets import Set
@@ -21,6 +21,9 @@ from geosolver.configuration import Configuration
 from geosolver.cluster import *
 # from geosolver.map import Map
 from geosolver.gmatch import gmatch
+
+from geosolver.vector import vector
+
 
 def pattern2graph(pattern):
     """convert pattern to pattern graph"""
@@ -112,13 +115,14 @@ class ClusterSolver3D(ClusterSolver):
 
     def _search(self, newcluster):
         print("search from:", newcluster)
-        # find all toplevel clusters connected to newcluster via one or more variables
-        connected = Set()
+        # find all toplevel clusters connected to newcluster
+        # via one or more variables
+        connected = set()
         for var in newcluster.vars:
             dependend = self.find_dependend(var)
             dependend = filter(lambda x: self.is_top_level(x), dependend)
-            connected.union_update(dependend)
-        diag_print("search: connected clusters="+str(connected),"clsolver3D")
+            connected.update(dependend)
+        diag_print("search: connected clusters="+str(connected), "clsolver3D")
         # try applying methods
         if self._try_method(connected):
             return True
@@ -127,8 +131,9 @@ class ClusterSolver3D(ClusterSolver):
     # end _search
 
     def _search_old(self, newcluster):
-        #print "search:", newcluster
-        # find all toplevel clusters connected to newcluster via one or more variables
+        # print "search:", newcluster
+        # find all toplevel clusters connected to newcluster
+        # via one or more variables
         connected = Set()
         for var in newcluster.vars:
             dependend = self.find_dependend(var)
@@ -200,17 +205,19 @@ class ClusterSolver3D(ClusterSolver):
         for methodclass in reversed([MergePR, MergeDR, MergeDDD, MergeADD, MergeDAD, MergeAA, MergeSD, MergeTTD, MergeRR]):
             matches = gmatch(methodclass.patterngraph, refgraph)
             if len(matches) > 0:
-                diag_print("number of matches = "+str(len(matches)), "clsolver3D")
+                diag_print("number of matches = " + str(len(matches)), "clsolver3D")
             for s in matches:
                 # diag_print("try match: "+str(s),"clsolver3D")
-                method = apply(methodclass, [s])
+
+                # method = apply(methodclass, [s])
+                # cf. https://docs.python.org/2/library/functions.html
+                #                                  #non-essential-built-in-funcs
+                method = methodclass(*[s])
                 succes = self._add_method_complete(method)
                 if succes:
-                   #raw_input()
-                   #print "press key"
-                   return True
-            # end for match
-        # end for method
+                    # raw_input()
+                    # print "press key"
+                    return True
         return False
 
     def _add_method_complete(self, merge):
@@ -222,12 +229,12 @@ class ClusterSolver3D(ClusterSolver):
 
         # check that the method is information increasing (infinc)
         infinc = True
-        connected = Set()
+        connected = set()
         for var in output.vars:
             dependend = self.find_dependend(var)
             dependend = filter(lambda x: self.is_top_level(x), dependend)
-            connected.union_update(dependend)
-        #for cluster in merge.inputs():
+            connected.update(dependend)
+        # for cluster in merge.inputs():
         #    if cluster in connected:
         #        connected.remove(cluster)
 
@@ -306,7 +313,7 @@ class MergePR(ClusterMethod):
         in1 = map["$p"]
         in2 = map["$r"]
         # create ouput
-        outvars = Set(in1.vars).union(in2.vars)
+        outvars = set(in1.vars).union(in2.vars)
         out = Rigid(outvars)
         # set method properties
         self._inputs = [in1, in2]
@@ -377,6 +384,7 @@ class MergeDR(ClusterMethod):
         else:
             return [conf1.copy()]
 
+
 class MergeRR(ClusterMethod):
     """Represents a merging of two rigids sharing three points (overconstrained).
        The first cluster determines the orientation of the resulting cluster
@@ -386,7 +394,7 @@ class MergeRR(ClusterMethod):
         in1 = map["$r1"]
         in2 = map["$r2"]
         # create output
-        out = Rigid(Set(in1.vars).union(in2.vars))
+        out = Rigid(set(in1.vars).union(in2.vars))
         # set method parameters
         self._inputs = [in1, in2]
         self._outputs = [out]
@@ -643,6 +651,7 @@ class MergeAA(ClusterMethod):
         solutions = solve_ada_3D(v1,v2,v3,a312,d12,a123)
         return solutions
 
+
 class MergeSD(ClusterMethod):
     """Derive a Rigid from a Scalabe and a Rigid sharing two points"""
     def __init__(self, map):
@@ -650,7 +659,7 @@ class MergeSD(ClusterMethod):
         in1 = map["$r"]
         in2 = map["$s"]
         # create output
-        out = Rigid(Set(in2.vars))
+        out = Rigid(set(in2.vars))
         # set method parameters
         self._inputs = [in1, in2]
         self._outputs = [out]
@@ -685,11 +694,11 @@ def solve_ddd_3D(v1,v2,v3,d12,d23,d31):
         d<xy>: numeric distance values
         a<xyz>: numeric angle in radians
     """
-    diag_print("solve_ddd: %s %s %s %f %f %f"%(v1,v2,v3,d12,d23,d31),"clmethods")
+    diag_print("solve_ddd: %s %s %s %f %f %f" % (v1, v2, v3, d12, d23, d31), "clmethods")
     # solve in 2D
-    p1 = vector.vector([0.0,0.0])
-    p2 = vector.vector([d12,0.0])
-    p3s = cc_int(p1,d31,p2,d23)
+    p1 = vector([0.0, 0.0])
+    p2 = vector([d12, 0.0])
+    p3s = cc_int(p1, d31, p2, d23)
     solutions = []
     # extend coords to 3D!
     p1.append(0.0)
@@ -701,8 +710,9 @@ def solve_ddd_3D(v1,v2,v3,d12,d23,d31):
     # return only one solution (if any)
     if len(solutions) > 0:
         solutions = [solutions[0]]
-    diag_print("solve_ddd solutions"+str(solutions),"clmethods")
+    diag_print("solve_ddd solutions"+str(solutions), "clmethods")
     return solutions
+
 
 def solve_dad_3D(v1,v2,v3,d12,a123,d23):
     """returns a list of Configurations of v1,v2,v3 such that distance v1-v2=d12 etc.
@@ -711,9 +721,9 @@ def solve_dad_3D(v1,v2,v3,d12,a123,d23):
         a<xyz>: numeric angle in radians
     """
     diag_print("solve_dad: %s %s %s %f %f %f"%(v1,v2,v3,d12,a123,d23),"clmethods")
-    p2 = vector.vector([0.0, 0.0])
-    p1 = vector.vector([d12, 0.0])
-    p3s = [ vector.vector([d23*math.cos(a123), d23*math.sin(a123)]) ]
+    p2 = vector([0.0, 0.0])
+    p1 = vector([d12, 0.0])
+    p3s = [ vector([d23*math.cos(a123), d23*math.sin(a123)]) ]
     # extend coords to 3D!
     p1.append(0.0)
     p2.append(0.0)
@@ -732,9 +742,9 @@ def solve_add_3D(a,b,c, a_cab, d_ab, d_bc):
     """
 
     diag_print("solve_dad: %s %s %s %f %f %f"%(a,b,c,a_cab,d_ab,d_bc),"clmethods")
-    p_a = vector.vector([0.0,0.0])
-    p_b = vector.vector([d_ab,0.0])
-    dir = vector.vector([math.cos(-a_cab),math.sin(-a_cab)])
+    p_a = vector([0.0,0.0])
+    p_b = vector([d_ab,0.0])
+    dir = vector([math.cos(-a_cab),math.sin(-a_cab)])
     solutions = cr_int(p_b, d_bc, p_a, dir)
     rval = []
     p_a.append(0.0)
@@ -745,6 +755,7 @@ def solve_add_3D(a,b,c, a_cab, d_ab, d_bc):
         rval.append(Configuration(map))
     return rval
 
+
 def solve_ada_3D(a, b, c, a_cab, d_ab, a_abc):
     """returns a list of Configurations of v1,v2,v3 such that distance v1-v2=d12 etc.
         v<x>: name of point variables
@@ -752,15 +763,15 @@ def solve_ada_3D(a, b, c, a_cab, d_ab, a_abc):
         a<xyz>: numeric angle in radians
     """
     diag_print("solve_ada: %s %s %s %f %f %f"%(a,b,c,a_cab,d_ab,a_abc),"clmethods")
-    p_a = vector.vector([0.0,0.0])
-    p_b = vector.vector([d_ab, 0.0])
-    dir_ac = vector.vector([math.cos(-a_cab),math.sin(-a_cab)])
-    dir_bc = vector.vector([math.cos(math.pi-a_abc),math.sin(math.pi-a_abc)])
+    p_a = vector([0.0, 0.0])
+    p_b = vector([d_ab, 0.0])
+    dir_ac = vector([math.cos(-a_cab),math.sin(-a_cab)])
+    dir_bc = vector([math.cos(math.pi-a_abc),math.sin(math.pi-a_abc)])
     dir_ac[1] = math.fabs(dir_ac[1])
     dir_bc[1] = math.fabs(dir_bc[1])
     if tol_eq(math.sin(a_cab), 0.0) and tol_eq(math.sin(a_abc),0.0):
                 m = d_ab/2 + math.cos(-a_cab)*d_ab - math.cos(-a_abc)*d_ab
-                p_c = vector.vector([m,0.0])
+                p_c = vector([m, 0.0])
                 # p_c = (p_a + p_b) / 2
                 p_a.append(0.0)
                 p_b.append(0.0)

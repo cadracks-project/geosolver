@@ -1,10 +1,12 @@
-from includes import *
-from pointDialog import *
-from distanceDialog import *
-from angleDialog import *
-from ui_constraint import *
+# coding: utf-8
 
-from prototypeObjects import *
+from solvergui.includes import *
+from solvergui.pointDialog import *
+from solvergui.distanceDialog import *
+from solvergui.angleDialog import *
+from solvergui.ui_constraint import *
+
+from solvergui.prototypeObjects import *
 
 
 from PyQt5 import QtGui, QtWidgets
@@ -13,6 +15,7 @@ from PyQt5 import QtGui, QtWidgets
 class Panel(QtWidgets.QWidget):
     def __init__(self, mainWindow, widget):
         QtWidgets.QWidget.__init__(self, widget)
+        print("instantiating a Panel : %i" % id(self))
         self.ui = Ui_ConstraintDialog()
         self.ui.setupUi(self)
         self.mainWindow = mainWindow
@@ -41,6 +44,7 @@ class Panel(QtWidgets.QWidget):
         # QtCore.QObject.connect(self.ui.tabWidget,
         #                        QtCore.SIGNAL("currentChanged(int)"),
         #                        self.tabChanged)
+        # self.ui.tabWidget.currentChanged.connect(self.tabChanged)
 
     def reset(self):
         index = self.ui.stackedWidget.currentIndex()
